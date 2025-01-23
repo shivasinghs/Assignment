@@ -10,7 +10,7 @@ const validationRules = {
     company:'required|string|max:64'
   },
 };
-
+//export validation rule
 module.exports = {
   validationRules
 };
