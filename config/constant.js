@@ -1,9 +1,13 @@
-const jwt = require('jsonwebtoken');
+const JWT = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const Validator = require('validatorjs');
+const VALIDATOR = require('validatorjs');
+const BCRYPT = require('bcryptjs');
+const { Op } = require('sequelize');
 
 module.exports = {
-    jwt,
+    JWT,
     uuidv4,
-    Validator,
+    VALIDATOR,
+    BCRYPT,
+    Op,
 };

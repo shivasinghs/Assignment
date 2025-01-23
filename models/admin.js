@@ -1,4 +1,3 @@
-// models/admin.js
 
 const { DataTypes } = require("sequelize")
 const sequelize = require("../../config/sequelize")
@@ -28,6 +27,8 @@ const Admin = sequelize.define(
     }
   },
   {
+    tableName: 'admin', 
+    freezeTableName: true,
     timestamps: true
   }
 )
