@@ -29,7 +29,7 @@ const Admin = sequelize.define(
       defaultValue: true,
     },
     createdAt: {
-      type: DataTypes.INTEGER, 
+      type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: Math.floor(Date.now() / 1000),
     },
@@ -38,13 +38,24 @@ const Admin = sequelize.define(
       allowNull: true,
     },
     updatedAt: {
-      type: DataTypes.INTEGER, 
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: Math.floor(Date.now() / 1000),
     },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    updatedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    deletedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    deletedAt: {
+      type: DataTypes.DATE, 
+      allowNull: true,
     },
   },
   {
