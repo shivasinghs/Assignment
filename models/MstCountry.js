@@ -2,25 +2,17 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
 const { uuidv4 } = require('../../config/constant'); 
 
-const Country = sequelize.define('Country', {
+const MstCountry = sequelize.define('MstCountry', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
     defaultValue: DataTypes.UUIDV4,
     allowNull: false,
   },
-  name_en: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  name_de: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
 }, {
-  tableName: 'countries',
+  tableName: 'mst_country',
   freezeTableName: true,
   timestamps: true,
 });
 
-module.exports = Country;
+module.exports = MstCountry;

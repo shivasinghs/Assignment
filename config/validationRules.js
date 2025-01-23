@@ -1,4 +1,3 @@
-const VALIDATOR = require('./constant');
 
 const validationRules = {
   User: {
@@ -15,7 +14,7 @@ const validationRules = {
     password: 'required|string|min:8|max:16',
   }
 };
-//export validation rule
+
 module.exports = {
   validationRules
 };

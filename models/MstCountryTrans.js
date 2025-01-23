@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
-const Category = require('./category');
 const { uuidv4 } = require('../../config/constant'); 
+const MstCountry = require('./MstCountry');
 
-const Subcategory = sequelize.define('Subcategory', {
+const MstCountryTrans = sequelize.define('MstCountryTrans', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -13,20 +13,19 @@ const Subcategory = sequelize.define('Subcategory', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
   },
-  category_id: {
+  country_id: {
     type: DataTypes.UUID,
     references: {
-      model: Category,
+      model: MstCountry,
       key: 'id',
     },
     allowNull: false,
   },
 }, {
-  tableName: 'sub_category',
+  tableName: 'mst_country_trans',
   freezeTableName: true,
   timestamps: true,
 });
 
-module.exports = Subcategory;
+module.exports = MstCountryTrans;

@@ -1,21 +1,22 @@
-const Admin = require('../models/Admin/index')
+const { Admin } = require('../models/index');
 
-const createAdmin = ()=>{
-   try {
-    const admin = Admin.findAll({
-        where:{email:'abc@gmail.com'},
-        limit:1
-    })
-    if(admin.length === 0){
-        const newAdmin = Admin.create({
-            id,
-            name,
-            email,
-            password,
-            country
-        })
-    }
-   } catch (error) {
-     console.log("Error in bootStrap.js",error);
-   }
-}
+const createAdmin = async () => {
+  try {
+    const existingAdmin = await Admin.findAll({
+      where: { email: 'shiva1234@gmail.com' },
+      limit: 1,
+    });
+
+    if (!existingAdmin) {
+      const newAdmin = await Admin.create({
+        name: 'shiva', 
+        email: 'shiva1234@gmail.com',
+        password: 'shiva1234', 
+      });
+    } 
+  } catch (error) {
+    console.error('Error creating admin:', error);
+  }
+};
+
+createAdmin();
