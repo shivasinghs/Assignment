@@ -15,6 +15,7 @@ const HTTP_STATUS_CODE = {
       status: statusCode,
       message,
       ...(error && { error }),
+      
     };
   };
 
