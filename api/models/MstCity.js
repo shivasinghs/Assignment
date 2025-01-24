@@ -25,7 +25,7 @@ const MstCity = sequelize.define('MstCity', {
     defaultValue: true,
   },
   createdAt: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     field: 'created_at',
     allowNull: false,
     defaultValue: Math.floor(Date.now() / 1000),
@@ -38,7 +38,7 @@ const MstCity = sequelize.define('MstCity', {
   updatedAt: {
     type: DataTypes.INTEGER,
     field: 'updated_at',
-    allowNull: false,
+    allowNull: true,
   },
   updatedBy: {
     type: DataTypes.UUID,

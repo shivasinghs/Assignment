@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
     defaultValue: true,
   },
   createdAt: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     field: 'created_at',
     allowNull: false,
     defaultValue: Math.floor(Date.now() / 1000),
@@ -54,7 +54,7 @@ const User = sequelize.define('User', {
   updatedAt: {
     type: DataTypes.INTEGER,
     field: 'updated_at',
-    allowNull: false,
+    allowNull: true,
   },
   updatedBy: {
     type: DataTypes.UUID,

@@ -1,10 +1,9 @@
 const { DataTypes } = require("sequelize")
 const sequelize = require("../../config/sequelize")
 const Category = require("./Category")
-const { uuidv4 } = require("../../config/constant")
 
-const SubCategory = sequelize.define(
-  "SubCategory",
+const CategoryTrans = sequelize.define(
+  "CategoryTrans",
   {
     id: {
       type: DataTypes.UUID,
@@ -12,19 +11,18 @@ const SubCategory = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false
     },
-    name: {
+    lang: {
       type: DataTypes.STRING,
-      allowNull: false,
-      unique: true
+      allowNull: false
     },
     categoryId: {
       type: DataTypes.UUID,
       field: "category_id",
+      allowNull: false,
       references: {
-        model: Category,
+        model: "Category",
         key: "id"
-      },
-      allowNull: false
+      }
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -69,10 +67,10 @@ const SubCategory = sequelize.define(
     }
   },
   {
-    tableName: "sub_category",
+    tableName: "category_trans",
     freezeTableName: true,
     timestamps: false
   }
 )
 
-module.exports = SubCategory
+module.exports = CategoryTrans

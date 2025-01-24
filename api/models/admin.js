@@ -30,7 +30,7 @@ const Admin = sequelize.define(
       defaultValue: true,
     },
     createdAt: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       field: 'created_at',
       allowNull: false,
       defaultValue: Math.floor(Date.now() / 1000),

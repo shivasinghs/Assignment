@@ -1,5 +1,5 @@
 const { Op, HTTP_STATUS_CODE, uuidv4 } = require("../../config/constant")
-const Category = require("../models/category")
+const Category = require("../models/Category")
 const i18n = require("../../config/i18n")
 
 const createCategory = async (req, res) => {
