@@ -2,16 +2,15 @@ const { Admin } = require('../models/index');
 
 const createAdmin = async () => {
   try {
-    const existingAdmin = await Admin.findAll({
+    const existingAdmin = await Admin.findOne({
       where: { email: 'shiva1234@gmail.com' },
-      limit: 1,
     });
 
     if (!existingAdmin) {
       const newAdmin = await Admin.create({
-        name: 'shiva', 
+        name: 'shiva',
         email: 'shiva1234@gmail.com',
-        password: 'shiva1234', 
+        password: 'shiva1234',
       });
     } 
   } catch (error) {

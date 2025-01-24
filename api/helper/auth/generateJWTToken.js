@@ -1,6 +1,6 @@
-const {JWT} = require('../../config/constant')
+const { JWT } = require('../../../config/constant');
 
-const secretKey = process.env.JWT_SECRET || 'your_default_secret_key'; 
+const secretKey = process.env.JWT_SECRET || 'your_default_secret_key';
 
 function generateToken(payload, expiresIn = '1h') {
   try {
@@ -13,5 +13,5 @@ function generateToken(payload, expiresIn = '1h') {
 }
 
 module.exports = {
-    generateToken,
-  };
+  generateToken,
+};

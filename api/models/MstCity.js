@@ -10,8 +10,9 @@ const MstCity = sequelize.define('MstCity', {
     defaultValue: DataTypes.UUIDV4,
     allowNull: false,
   },
-  country_id: {
+  countryId: {
     type: DataTypes.UUID,
+    field:'country_id',
     references: {
       model: MstCountry,
       key: 'id',
@@ -20,41 +21,49 @@ const MstCity = sequelize.define('MstCity', {
   },
   isActive: {
     type: DataTypes.BOOLEAN,
+    field: 'is_active',
     defaultValue: true,
   },
   createdAt: {
     type: DataTypes.INTEGER,
+    field: 'created_at',
     allowNull: false,
     defaultValue: Math.floor(Date.now() / 1000),
   },
   createdBy: {
     type: DataTypes.UUID,
+    field: 'created_by',
     allowNull: true,
   },
   updatedAt: {
     type: DataTypes.INTEGER,
+    field: 'updated_at',
     allowNull: false,
-  },
-  isDeleted: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
   },
   updatedBy: {
     type: DataTypes.UUID,
+    field: 'updated_by',
     allowNull: true,
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    field: 'is_deleted',
+    defaultValue: false,
   },
   deletedBy: {
     type: DataTypes.UUID,
+    field: 'deleted_by',
     allowNull: true,
   },
   deletedAt: {
     type: DataTypes.DATE, 
+    field: 'deleted_at',
     allowNull: true,
   },
 }, {
   tableName: 'mst_city',
   freezeTableName: true,
-  timestamps: true,
+  timestamps: false,
 });
 
 module.exports = MstCity;

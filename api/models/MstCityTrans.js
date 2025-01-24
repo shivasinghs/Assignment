@@ -14,6 +14,10 @@ const MstCityTrans = sequelize.define('MstCityTrans', {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    lang: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     cityId: { 
       type: DataTypes.UUID, 
       field: "city_id", 
@@ -25,41 +29,49 @@ const MstCityTrans = sequelize.define('MstCityTrans', {
     },
     isActive: {
       type: DataTypes.BOOLEAN,
+      field: 'is_active',
       defaultValue: true,
     },
     createdAt: {
       type: DataTypes.INTEGER,
+      field: 'created_at',
       allowNull: false,
       defaultValue: Math.floor(Date.now() / 1000),
     },
     createdBy: {
       type: DataTypes.UUID,
+      field: 'created_by',
       allowNull: true,
     },
     updatedAt: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    isDeleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      field: 'updated_at',
+      allowNull: true,
     },
     updatedBy: {
       type: DataTypes.UUID,
+      field: 'updated_by',
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_deleted',
+      defaultValue: false,
     },
     deletedBy: {
       type: DataTypes.UUID,
+      field: 'deleted_by',
       allowNull: true,
     },
     deletedAt: {
       type: DataTypes.DATE, 
+      field: 'deleted_at',
       allowNull: true,
     },
   }, {
     tableName: 'mst_city_trans', 
     freezeTableName: true,
-    timestamps: true,
+    timestamps: false,
   });
 
 module.exports = MstCityTrans; 

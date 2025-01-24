@@ -1,64 +1,85 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
-const { uuidv4 } = require('../../config/constant'); 
-const MstCountry = require('./MstCountry');
+const { uuidv4 } = require('../../config/constant');
 
-const MstCountryTrans = sequelize.define('MstCountryTrans', {
+const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    defaultValue: uuidv4(),
     allowNull: false,
   },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  country_id: {
-    type: DataTypes.UUID,
-    references: {
-      model: MstCountry,
-      key: 'id',
-    },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  companyName: {
+    type: DataTypes.STRING,
+    field: 'company_name',
     allowNull: false,
   },
   isActive: {
     type: DataTypes.BOOLEAN,
+    field: 'is_active',
     defaultValue: true,
   },
   createdAt: {
     type: DataTypes.INTEGER,
+    field: 'created_at',
     allowNull: false,
     defaultValue: Math.floor(Date.now() / 1000),
   },
   createdBy: {
     type: DataTypes.UUID,
+    field: 'created_by',
     allowNull: true,
   },
   updatedAt: {
     type: DataTypes.INTEGER,
+    field: 'updated_at',
     allowNull: false,
-  },
-  isDeleted: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
   },
   updatedBy: {
     type: DataTypes.UUID,
+    field: 'updated_by',
     allowNull: true,
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    field: 'is_deleted',
+    defaultValue: false,
   },
   deletedBy: {
     type: DataTypes.UUID,
+    field: 'deleted_by',
     allowNull: true,
   },
   deletedAt: {
     type: DataTypes.DATE, 
+    field: 'deleted_at',
     allowNull: true,
   },
 }, {
-  tableName: 'mst_country_trans',
+  tableName: 'user',
   freezeTableName: true,
-  timestamps: true,
+  timestamps: false,
 });
 
-module.exports = MstCountryTrans;
+module.exports = User;
