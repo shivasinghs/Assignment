@@ -1,12 +1,11 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
-const { uuidv4 } = require('../../config/constant');
 
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
-    defaultValue: uuidv4(),
+    defaultValue: DataTypes.UUIDV4, 
     allowNull: false,
   },
   name: {
@@ -33,7 +32,7 @@ const User = sequelize.define('User', {
   companyName: {
     type: DataTypes.STRING,
     field: 'company_name',
-    allowNull: false,
+    allowNull: true,
   },
   isActive: {
     type: DataTypes.BOOLEAN,
@@ -52,7 +51,7 @@ const User = sequelize.define('User', {
     allowNull: true,
   },
   updatedAt: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     field: 'updated_at',
     allowNull: true,
   },
@@ -72,7 +71,7 @@ const User = sequelize.define('User', {
     allowNull: true,
   },
   deletedAt: {
-    type: DataTypes.DATE, 
+    type: DataTypes.BIGINT,
     field: 'deleted_at',
     allowNull: true,
   },

@@ -6,7 +6,7 @@ const validationRules = {
     password: 'required|string|min:8|max:16',
     country: 'required|string|max:30',
     city: 'required|string|max:30',
-    company:'required|string|max:64'
+    companyName:'string|max:64'
   },
   Admin:{
     name: 'required|string|min:3|max:30',

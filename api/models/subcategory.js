@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize")
 const sequelize = require("../../config/sequelize")
 const Category = require("./Category")
-const { uuidv4 } = require("../../config/constant")
+const { uuidv4 } = require("../../config/constants")
 
 const SubCategory = sequelize.define(
   "SubCategory",
@@ -11,11 +11,6 @@ const SubCategory = sequelize.define(
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true
     },
     categoryId: {
       type: DataTypes.UUID,
@@ -43,7 +38,7 @@ const SubCategory = sequelize.define(
       allowNull: true
     },
     updatedAt: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       field: "updated_at",
       allowNull: true
     },
@@ -63,7 +58,7 @@ const SubCategory = sequelize.define(
       allowNull: true
     },
     deletedAt: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
       field: "deleted_at",
       allowNull: true
     }

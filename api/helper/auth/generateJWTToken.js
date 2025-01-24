@@ -1,17 +1,17 @@
-const { JWT } = require('../../../config/constant');
+const { JWT } = require("../../../config/constants")
 
-const secretKey = process.env.JWT_SECRET || 'your_default_secret_key';
+const secretKey = process.env.JWT_SECRET 
 
-function generateToken(payload, expiresIn = '1h') {
+function generateToken(payload, expiresIn) {
   try {
-    const token = JWT.sign(payload, secretKey, { expiresIn });
-    return token;
+    const token = JWT.sign(payload, secretKey, { expiresIn })
+    return token
   } catch (error) {
-    console.error('Error generating token:', error);
-    throw new Error('Error generating token');
+    console.error("Error generating token:", error)
+    throw new Error("Error generating token")
   }
 }
 
 module.exports = {
-  generateToken,
-};
+  generateToken
+}

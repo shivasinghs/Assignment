@@ -9,6 +9,16 @@ const MstCityTrans = require("./MstCityTrans")
 const CategoryTrans = require("./CategoryTrans")
 const SubCategoryTrans = require("./SubCategoryTrans")
 
+Category.hasMany(SubCategory, {
+  foreignKey: "categoryId",
+  as: "subcategories",
+});
+
+SubCategory.belongsTo(Category, {
+  foreignKey: "categoryId",
+  as: "category",
+});
+
 module.exports = {
   Admin,
   User,

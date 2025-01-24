@@ -11,6 +11,10 @@ const CategoryTrans = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false
     },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     lang: {
       type: DataTypes.STRING,
       allowNull: false
@@ -41,7 +45,7 @@ const CategoryTrans = sequelize.define(
       allowNull: true
     },
     updatedAt: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       field: "updated_at",
       allowNull: true
     },
@@ -61,7 +65,7 @@ const CategoryTrans = sequelize.define(
       allowNull: true
     },
     deletedAt: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
       field: "deleted_at",
       allowNull: true
     }
