@@ -24,7 +24,7 @@ const CategoryTrans = sequelize.define(
       field: "category_id",
       allowNull: false,
       references: {
-        model: "Category",
+        model: Category,
         key: "id"
       }
     },

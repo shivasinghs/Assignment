@@ -25,35 +25,60 @@
 			"ADMIN_CREATED_SUCCESSFULLY": "Admin erfolgreich erstellt",
 			"ADMIN_UPDATED_SUCCESSFULLY": "Admin erfolgreich aktualisiert",
 			"ADMIN_DELETED_SUCCESSFULLY": "Admin erfolgreich gelöscht",
-			"LOGIN_SUCCESS": "Admin erfolgreich angemeldet"
+			"LOGIN_SUCCESS": "Admin erfolgreich angemeldet",
+			"INVALID_CREDENTIALS": "Ungültige E-Mail oder Passwort",
+			"ADMIN_CREATED": "Admin erfolgreich erstellt"
 		}
 	},
 	"Category": {
 		"CATEGORY_NOT_FOUND": "Keine Kategorien gefunden",
 		"CATEGORY_CREATED": "Kategorie erfolgreich erstellt",
 		"CATEGORY_UPDATED": "Kategorie erfolgreich aktualisiert",
-		"CATEGORY_DELETED": "Kategorie erfolgreich gelöscht"
+		"CATEGORY_DELETED": "Kategorie erfolgreich gelöscht",
+		"CATEGORY_NAME_REQUIRED": "Kategoriename ist erforderlich",
+		"CATEGORY_TRANSLATIONS_REQUIRED": "Übersetzungen für die Kategorie sind erforderlich",
+		"CATEGORIES_LISTED": "Kategorien erfolgreich aufgelistet",
+		"CATEGORY_TRANSLATIONS_EXISTS": "Category.CATEGORY_TRANSLATIONS_EXISTS"
+	},
+	"SubCategory": {
+		"SUBCATEGORY_CREATED": "Unterkategorie erfolgreich erstellt",
+		"SUBCATEGORY_FETCHED": "Unterkategorien erfolgreich abgerufen",
+		"SUBCATEGORY_UPDATED": "Unterkategorie erfolgreich aktualisiert",
+		"SUBCATEGORY_DELETED": "Unterkategorie erfolgreich gelöscht",
+		"SUBCATEGORY_NOT_FOUND": "Keine Unterkategorien gefunden",
+		"SUBCATEGORY_TRANSLATIONS_REQUIRED": "Übersetzungen für die Unterkategorie sind erforderlich",
+		"SUBCATEGORY_TRANSLATIONS_EXISTS": "SubCategory.SUBCATEGORY_TRANSLATIONS_EXISTS"
 	},
 	"Country": {
 		"COUNTRY_NOT_FOUND": "Keine Länder gefunden",
 		"COUNTRY_CREATED": "Land erfolgreich erstellt",
 		"COUNTRY_UPDATED": "Land erfolgreich aktualisiert",
-		"COUNTRY_DELETED": "Land erfolgreich gelöscht"
+		"COUNTRY_DELETED": "Land erfolgreich gelöscht",
+		"COUNTRY_NAME_REQUIRED": "Ländername ist erforderlich",
+		"COUNTRY_TRANSLATIONS_REQUIRED": "Übersetzungen für das Land sind erforderlich",
+		"COUNTRY_FETCHED": "Länder erfolgreich abgerufen",
+		"COUNTRY_TRANSLATIONS_EXISTS": "Country.COUNTRY_TRANSLATIONS_EXISTS"
 	},
 	"City": {
 		"CITY_NOT_FOUND": "Keine Städte gefunden",
 		"CITY_CREATED": "Stadt erfolgreich erstellt",
 		"CITY_UPDATED": "Stadt erfolgreich aktualisiert",
-		"CITY_DELETED": "Stadt erfolgreich gelöscht"
+		"CITY_DELETED": "Stadt erfolgreich gelöscht",
+		"CITY_FETCHED": "Städte erfolgreich abgerufen",
+		"CITY_TRANSLATIONS_REQUIRED": "Übersetzungen für die Stadt sind erforderlich"
 	},
-	"General": {
-		"ROUTE_NOT_FOUND": "Kann ${req.originalUrl} auf diesem Server nicht finden",
+	"Messages": {
 		"INTERNAL_ERROR": "Interner Serverfehler",
 		"NO_RESOURCES_FOUND": "Keine Ressourcen gefunden",
-		"RESOURCE_NOT_FOUND": "Ressource nicht gefunden"
+		"RESOURCE_NOT_FOUND": "Ressource nicht gefunden",
+		"INVALID_INPUT": "Ungültige Eingaben",
+		"EMAIL_ALREADY_EXISTS": "E-Mail ist bereits vorhanden",
+		"SERVER_ERROR": "Serverfehler"
 	},
 	"messages": {
-		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
-		"USER_CREATED": "messages.USER_CREATED"
+		"INTERNAL_ERROR": "messages.INTERNAL_ERROR"
+	},
+	"CITY": {
+		"CITY_TRANSLATIONS_EXISTS": "CITY.CITY_TRANSLATIONS_EXISTS"
 	}
 }

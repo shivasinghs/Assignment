@@ -4,6 +4,7 @@ const { generateToken } = require("../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../config/validationRules");
 const i18n = require("../../../config/i18n");
 
+
 const SignUp = async (req, res) => {
   try {
     const { name, email, password, country, city, companyName } = req.body;
@@ -24,7 +25,7 @@ const SignUp = async (req, res) => {
 
     if (existingUser) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.EMAIL_ALREADY_EXISTS"),
+        msg: i18n.__("User.Auth.EMAIL_ALREADY_EXISTS"),
         data: "",
         err: null,
       });
@@ -46,7 +47,7 @@ const SignUp = async (req, res) => {
     delete userWithoutPassword.password;
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
-      msg: i18n.__("messages.USER_CREATED"),
+      msg: i18n.__("User.Auth.USER_CREATED"),
       data: userWithoutPassword,
       err: null,
     });
@@ -54,25 +55,26 @@ const SignUp = async (req, res) => {
     console.error("Error in signup:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: error,
     });
   }
 };
 
-const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  const validation = new VALIDATOR(req.body, validationRules.login);
-  if (validation.fails()) {
-    return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-      msg: i18n.__("messages.INVALID_INPUT"),
-      data: validation.errors.all(),
-      err: null,
-    });
-  }
+const login = async (req, res) => { 
 
   try {
+    const { email, password } = req.body;
+
+    const validation = new VALIDATOR(req.body, validationRules.Login);
+    if (validation.fails()) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_INPUT"),
+        data: validation.errors.all(),
+        err: null,
+      });
+    }
+
     const user = await User.findOne({ where: { email: { [Op.iLike]: email } } });
 
     if (!user) {
@@ -99,7 +101,7 @@ const login = async (req, res) => {
     );
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("messages.LOGIN_SUCCESS"),
+      msg: i18n.__("User.Auth.LOGIN_SUCCESS"),
       data: { token },
       err: null,
     });

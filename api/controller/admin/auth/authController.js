@@ -1,13 +1,14 @@
 const { Admin } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
-const { HTTP_STATUS_CODE, BCRYPT ,Op} = require("../../../../config/constants");
+const { HTTP_STATUS_CODE, BCRYPT ,Op,VALIDATOR} = require("../../../../config/constants");
 const i18n = require('../../../../config/i18n');
+const validationRules = require('../../../../config/validationRules')
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const validation = new VALIDATOR(req.body, validationRules.Admin);
+    const validation = new VALIDATOR(req.body, validationRules.Login);
     
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({

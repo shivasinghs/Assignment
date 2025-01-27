@@ -1,7 +1,7 @@
 try {
   const express = require("express");
   const cors = require("cors");
-  const corsOptions = require("./config/security");
+  const {corsOptions} = require("./config/security");
   const i18n = require("./config/i18n");
   const languageSelect = require("./api/middleware/i18n");
   const route = require('./config/route');
@@ -17,10 +17,14 @@ try {
   app.use(route);
  
 bootstrap()
+// .then((data) => {
+//   console.log(data);
+// })
+// .catch(err => {
+//   console.error( err);
+// });
 
-.catch(err => {
-  console.error('Unable to connect to the database:', err);
-});
+
 
   app.get("/", (req, res) => {
     res.send("Hello from the backend!");
