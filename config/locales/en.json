@@ -36,7 +36,10 @@
 		"CATEGORY_TRANSLATIONS_REQUIRED": "Translations for the category are required",
 		"CATEGORIES_LISTED": "Categories successfully listed",
 		"CATEGORY_TRANSLATIONS_EXISTS": "Category Translations exists already",
-		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Category assigned to a account "
+		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Category assigned to a account ",
+		"CATEGORY_FETCHED": "Category.CATEGORY_FETCHED",
+		"CATEGORIES_FETCHED": "Category.CATEGORIES_FETCHED",
+		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "Category.CATEGORY_WITH_SUBCATEGORIES_FETCHED"
 	},
 	"SubCategory": {
 		"SUBCATEGORY_CREATED": "Subcategory successfully created",
@@ -46,7 +49,8 @@
 		"SUBCATEGORY_NOT_FOUND": "No subcategories found",
 		"SUBCATEGORY_TRANSLATIONS_REQUIRED": "Translations for the subcategory are required",
 		"SUBCATEGORY_TRANSLATIONS_EXISTS": "SubCategory Translations exists already",
-		"SUBCATEGORY_ASSIGNED_TO_ACCOUNT": "SubCategory assigned to a account "
+		"SUBCATEGORY_ASSIGNED_TO_ACCOUNT": "SubCategory assigned to a account ",
+		"SUBCATEGORIES_FETCHED": "SubCategory.SUBCATEGORIES_FETCHED"
 	},
 	"Country": {
 		"COUNTRY_NOT_FOUND": "No countries found",
@@ -89,6 +93,9 @@
 		"SERVER_ERROR": "Server error"
 	},
 	"messages": {
-		"INVALID_TOKEN": "messages.INVALID_TOKEN"
+		"INVALID_TOKEN": "messages.INVALID_TOKEN",
+		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
+		"NO_AUTH_HEADER": "messages.NO_AUTH_HEADER",
+		"INVALID_INPUT": "messages.INVALID_INPUT"
 	}
 }

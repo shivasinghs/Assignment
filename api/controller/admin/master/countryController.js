@@ -1,15 +1,14 @@
 const { MstCountry, MstCountryTrans } = require("../../../models/index");
-const { HTTP_STATUS_CODE,VALIDATOR } = require("../../../../config/constants");
+const { HTTP_STATUS_CODE, VALIDATOR,uuidv4 } = require("../../../../config/constants");
 const i18n = require("../../../../config/i18n");
-const { uuidv4 } = require("../../../../config/constants");
 const { validationRules } = require("../../../../config/validationRules");
-
+const sequelize = require('../../../../config/sequelize');
 
 const createCountry = async (req, res) => {
   try {
     const { translations } = req.body;
-    
-    const validation = new VALIDATOR(req.body, validationRules.TransController);
+    const adminId = req.admin.id;
+    const validation = new VALIDATOR(req.body, {translations : validationRules.Country.translations});
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -17,52 +16,53 @@ const createCountry = async (req, res) => {
         err: null,
       });
     }
-    
-    for (let translation of translations) {
-      const existingTranslation = await MstCountryTrans.findOne({
-        where: {
-          lang: translation.lang,
-          name: translation.name,
-        },
-        include: [
-          {
-            model: MstCountry,
-            as: 'country',
-          },
-        ],
+
+    for (let i = 0; i < translations.length; i++) {
+      const query = `
+        SELECT id FROM mst_country_trans 
+        WHERE lang = :lang AND name = :name AND is_deleted = false
+      `;
+
+      const existingTranslation = await sequelize.query(query, {
+        replacements: { lang: translations[i].lang, name: translations[i].name },
+        type: sequelize.QueryTypes.SELECT,
+        raw: true,
       });
 
-      if (existingTranslation) {
+      if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
           msg: i18n.__("Country.COUNTRY_TRANSLATIONS_EXISTS"),
-          data: existingTranslation,
+          data: "",
           err: null,
         });
       }
     }
 
-    // Create the country after validating translations
     const newCountry = await MstCountry.create({
       id: uuidv4(),
       isActive: true,
-      createdAt: Math.floor(Date.now() / 1000)
+      createdAt: Math.floor(Date.now() / 1000),
+      createdBy : adminId
     });
 
-    const translationPromises = translations.map(async (translation) => {
-      return await MstCountryTrans.create({
+    const translationsData = [];
+    for (let i = 0; i < translations.length; i++) {
+      translationsData.push({
         id: uuidv4(),
-        name: translation.name,
-        lang: translation.lang,
-        countryId: newCountry.id
+        name: translations[i].name,
+        lang: translations[i].lang,
+        countryId: newCountry.id,
+        createdAt: Math.floor(Date.now() / 1000),
+        createdBy : adminId
       });
-    });
+    }
 
-    await Promise.all(translationPromises);
+    await MstCountryTrans.bulkCreate(translationsData);
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
       msg: i18n.__("Country.COUNTRY_CREATED"),
-      data: { country: newCountry, translations },
-      err: null
+      data: { countryId: newCountry.id },
+      err: null,
     });
   } catch (error) {
     console.error("Error in creating country:", error);
@@ -77,61 +77,41 @@ const createCountry = async (req, res) => {
 const getCountryById = async (req, res) => {
   try {
     const { countryId } = req.params;
-    const country = await MstCountry.findByPk(countryId,{
-      include: [
-        {
-          model: MstCountryTrans,
-          as: "translations"
-        }
-      ]
+
+    const validation = new VALIDATOR(req.params, { countryId: validationRules.Country.countryId });
+    if (validation.fails()) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_INPUT"),
+        data: "",
+        err: validation.errors.all(),
+      });
+    }
+
+    const query = `
+      SELECT c.id, ct.*
+      FROM mst_country c
+      LEFT JOIN mst_country_trans ct ON ct.country_id = c.id
+      WHERE c.id = :countryId
+    `;
+
+    const country = await sequelize.query(query, {
+      replacements: { countryId },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true,
     });
 
-    if (!country) {
+    if (!country || country.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
         msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
         data: "",
-        err: null
+        err: null,
       });
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("Country.COUNTRY_FETCHED"),
       data: country,
-      err: null
-    });
-  } catch (error) {
-    console.error("Error in getting country:", error);
-    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: error.message,
       err: null,
-    });
-  }
-};
-
-const getAllCountry = async (req, res) => {
-  try {
-    const country = await MstCountry.findAll({
-      include: [
-        {
-          model: MstCountryTrans,
-          as: "translations"
-        }
-      ]
-    });
-
-    if (!country) {
-      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
-        data: "",
-        err: null
-      });
-    }
-
-    return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Country.COUNTRY_FETCHED"),
-      data: country,
-      err: null
     });
   } catch (error) {
     console.error("Error in getting country:", error);
@@ -145,58 +125,79 @@ const getAllCountry = async (req, res) => {
 
 const updateCountry = async (req, res) => {
   try {
-    const { countryId } = req.params;
-    const { translations } = req.body;
+    const { countryId, translations } = req.body;
+    const adminId = req.admin.id;
 
-    const Validation = new VALIDATOR(req.body, validationRules.TransController);
-    if (Validation.fails()) {
+    const validation = new VALIDATOR(req.body, validationRules.Country);
+    if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: {  
-          Errors:Validation.errors.all(),
-        },
-        err: null,
+        data: "",
+        err: validation.errors.all(),
       });
     }
 
-    const country = await MstCountry.findByPk(countryId);
+    const country = await MstCountry.findOne({
+      where: { id: countryId, isDeleted: false },
+      attributes: ['id'],
+    });
 
     if (!country) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
         msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
         data: "",
-        err: null
+        err: null,
       });
     }
 
-    country.updatedAt =  Math.floor(Date.now() / 1000);
+    for (let i = 0; i < translations.length; i++) {
+      const query = `
+        SELECT id FROM mst_country_trans 
+        WHERE lang = :lang AND name = :name AND is_deleted = false AND country_id != :countryId
+      `;
+
+      const existingTranslation = await sequelize.query(query, {
+        replacements: { lang: translations[i].lang, name: translations[i].name, countryId },
+        type: sequelize.QueryTypes.SELECT,
+        raw: true,
+      });
+
+      if (existingTranslation.length > 0) {
+        return res.status(HTTP_STATUS_CODE.CONFLICT).json({
+          msg: i18n.__("Country.COUNTRY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_COUNTRY"),
+          data: "",
+          err: null,
+        });
+      }
+    }
+
+    country.updatedAt = Math.floor(Date.now() / 1000);
+    country.updatedBy = adminId;
     await country.save();
 
-    if (translations && translations.length > 0) {
-      const translationPromises = translations.map(async (translation) => {
-        const existingTranslation = await MstCountryTrans.findOne({
-          where: { countryId: countryId, lang: translation.lang }
-        });
+    await MstCountryTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { countryId: countryId, isDeleted: false } }
+    );
 
-        if (existingTranslation) {
-          existingTranslation.name = translation.name;
-          await existingTranslation.save();
-        } else {
-          return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-            msg: i18n.__("Country.COUNTRY_TRANSLATIONS_NOT_FOUND"),
-            data: "",
-            err: null
-          });
-        }
+    const translationsData = [];
+    for (let i = 0; i < translations.length; i++) {
+      translationsData.push({
+        id: uuidv4(),
+        name: translations[i].name,
+        lang: translations[i].lang,
+        countryId: countryId,
+        createdBy: adminId,
+        createdAt: Math.floor(Date.now() / 1000),
       });
-
-      await Promise.all(translationPromises);
     }
+
+    await MstCountryTrans.bulkCreate(translationsData);
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("Country.COUNTRY_UPDATED"),
-      data: { country, translations },
-      err: null
+      data: country,
+      err: null,
     });
   } catch (error) {
     console.error("Error in updating country:", error);
@@ -208,35 +209,48 @@ const updateCountry = async (req, res) => {
   }
 };
 
+
 const deleteCountry = async (req, res) => {
   try {
     const { countryId } = req.params;
+    const adminId = req.admin.id;
 
-    const country = await MstCountry.findByPk(countryId);
+    const validation = new VALIDATOR(req.params, { countryId: validationRules.Country.countryId });
+    if (validation.fails()) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_INPUT"),
+        data: "",
+        err: validation.errors.all(),
+      });
+    }
+
+    const country = await MstCountry.findOne({
+      where: { id: countryId, isDeleted: false },
+      attributes: ['id'],
+    });
 
     if (!country) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
         msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
         data: "",
-        err: null
+        err: null,
       });
     }
-    await MstCountryTrans.destroy({
-      where: {
-        countryId: countryId
-      }
-    });
-    
-    await MstCountry.destroy({
-      where: {
-        id: countryId  
-      }
-    });
+
+    await MstCountryTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { countryId: countryId, isDeleted: false } }
+    );
+
+    await MstCountry.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { id: countryId, isDeleted: false } }
+    );
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("Country.COUNTRY_DELETED"),
-      data: "",
-      err: null
+      data: country,
+      err: null,
     });
   } catch (error) {
     console.error("Error in deleting country:", error);
@@ -248,11 +262,9 @@ const deleteCountry = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createCountry,
   getCountryById,
-  getAllCountry,
   updateCountry,
   deleteCountry
 };

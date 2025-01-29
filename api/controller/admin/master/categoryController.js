@@ -52,6 +52,7 @@ const createCategory = async (req, res) => {
         name: translations[i].name,
         lang: translations[i].lang,
         categoryId: newCategory.id,
+        createdAt: Math.floor(Date.now() / 1000),
         createdBy : adminId
       });
     }
@@ -78,8 +79,8 @@ const createCategory = async (req, res) => {
 const getCategoryById = async (req, res) => {
   try {
     const { categoryId } = req.params;
-
-    const validation = new VALIDATOR(req.params, {categoryId : validationRules.CategoryController.categoryId});
+   
+    const validation = new VALIDATOR(req.params, {categoryId : validationRules.Category.categoryId});
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -130,7 +131,7 @@ const updateCategory = async (req, res) => {
     const { categoryId, translations } = req.body;
     const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.body, validationRules.CategoryController);
+    const validation = new VALIDATOR(req.body, validationRules.Category);
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -151,16 +152,6 @@ const updateCategory = async (req, res) => {
         err: null,
       });
     }
-
-    category.updatedAt = Math.floor(Date.now() / 1000);
-    category.updatedBy = adminId;
-    await category.save();
-
-    await CategoryTrans.update(
-      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { categoryId: categoryId, isDeleted: false } }
-    );
-
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
@@ -183,6 +174,15 @@ const updateCategory = async (req, res) => {
       }
     }   
 
+    category.updatedAt = Math.floor(Date.now() / 1000);
+    category.updatedBy = adminId;
+    await category.save();
+
+    await CategoryTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { categoryId: categoryId, isDeleted: false } }
+    );
+    
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
@@ -217,7 +217,7 @@ const deleteCategory = async (req, res) => {
     const { categoryId } = req.params;
     const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.params, {categoryId : validationRules.CategoryController.categoryId});
+    const validation = new VALIDATOR(req.params, {categoryId : validationRules.Category.categoryId});
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -244,6 +244,7 @@ const deleteCategory = async (req, res) => {
         categoryId: categoryId,
         isDeleted: false,
       },
+      attributes: ['id']
     });
 
     if (accountsWithCategory > 0) {

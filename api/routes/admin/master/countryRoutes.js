@@ -1,10 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const countryController = require('../../../controller/admin/master/countryController')
+const countryController = require('../../../controller/admin/master/CountryController')
+const adminAuthMiddleware = require('../../../middleware/adminAuthMiddleware')
 
-router.post("/add", countryController.createCountry)
-router.get("/get/:countryId", countryController.getCountryById)
-router.get("/get", countryController.getAllCountry)
-router.post("/update/:countryId", countryController.updateCountry)
-router.delete("/delete/:countryId", countryController.deleteCountry)
+router.post("/add",adminAuthMiddleware, countryController.createCountry)
+router.get("/get/:countryId",adminAuthMiddleware, countryController.getCountryById)
+router.post("/update",adminAuthMiddleware, countryController.updateCountry)
+router.delete("/delete/:countryId",adminAuthMiddleware, countryController.deleteCountry)
 module.exports = router

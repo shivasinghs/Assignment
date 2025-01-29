@@ -14,13 +14,14 @@ const SignUp = async (req, res) => {
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
+        data: "",
+        err: validation.errors.all(),
       });
     }
+
     const existingUser = await User.findOne({
       where: { email: { [Op.iLike]: email } },
-      attributes : ["id"]
+      attributes: ["id"]
     });
 
     if (existingUser) {
@@ -43,31 +44,30 @@ const SignUp = async (req, res) => {
       companyName,
     });
 
-
     return res.status(HTTP_STATUS_CODE.CREATED).json({
       msg: i18n.__("User.Auth.USER_CREATED"),
-      data: { id: newUser.id, name: newUser.name,email : newUser.email },
+      data: { id: newUser.id, name: newUser.name, email: newUser.email },
       err: null,
     });
   } catch (error) {
     console.error("Error in signup:", error);
-    return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR).json({
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data:error.message,
+      data: error.message,
       err: null,
     });
   }
 };
 
 const login = async (req, res) => { 
-
   try {
     const { email, password } = req.body;
 
-    const validation = new VALIDATOR(req.body,{
+    const validation = new VALIDATOR(req.body, {
       email: validationRules.User.email,
       password: validationRules.User.password
     });
+
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -76,7 +76,10 @@ const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ where: { email: { [Op.iLike]: email } }, attributes: ['id']  });
+    const user = await User.findOne({
+      where: { email: { [Op.iLike]: email } },
+      attributes: ["id", "password"]
+    });
 
     if (!user) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -102,7 +105,7 @@ const login = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.LOGIN_SUCCESS"),
-      data:{ userId: user.id, email: user.email, token },
+      data: { userId: user.id, email: user.email, token },
       err: null,
     });
   } catch (error) {
@@ -159,7 +162,7 @@ const updateProfile = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.PROFILE_UPDATED"),
-      data: {updatedData,userId},
+      data: user,
       err: null,
     });
   } catch (error) {

@@ -5,7 +5,7 @@ const userAuthMiddleware = require('../../../middleware/userAuthMiddleware')
 
 router.post("/add",userAuthMiddleware, accountController.createAccount)
 router.get("/get/:accountId", accountController. getAccountById)
-router.get("/get", accountController.getAllAccounts)
-router.post("/update/:accountId",userAuthMiddleware, accountController. updateAccount)
+router.get("/get",userAuthMiddleware, accountController.getAllAccounts)
+router.post("/update",userAuthMiddleware, accountController. updateAccount)
 router.delete("/delete/:accountId",userAuthMiddleware, accountController.deleteAccount)
 module.exports = router

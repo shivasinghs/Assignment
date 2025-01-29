@@ -36,7 +36,10 @@
 		"CATEGORY_TRANSLATIONS_REQUIRED": "Übersetzungen für die Kategorie sind erforderlich",
 		"CATEGORIES_LISTED": "Kategorien erfolgreich aufgelistet",
 		"CATEGORY_TRANSLATIONS_EXISTS": "Kategorietranslationen existieren bereits",
-		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Kategorie ist einem Konto zugeordnet"
+		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Kategorie ist einem Konto zugeordnet",
+		"CATEGORY_FETCHED": "Category.CATEGORY_FETCHED",
+		"CATEGORIES_FETCHED": "Category.CATEGORIES_FETCHED",
+		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "Category.CATEGORY_WITH_SUBCATEGORIES_FETCHED"
 	},
 	"SubCategory": {
 		"SUBCATEGORY_CREATED": "Unterkategorie erfolgreich erstellt",
@@ -93,6 +96,8 @@
 	},
 	"messages": {
 		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
-		"INVALID_TOKEN": "messages.INVALID_TOKEN"
+		"INVALID_TOKEN": "messages.INVALID_TOKEN",
+		"NO_AUTH_HEADER": "messages.NO_AUTH_HEADER",
+		"INVALID_INPUT": "messages.INVALID_INPUT"
 	}
 }

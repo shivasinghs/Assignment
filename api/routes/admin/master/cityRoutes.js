@@ -1,10 +1,10 @@
 const express = require("express")
 const router = express.Router()
-const cityController = require('../../../controller/admin/master/cityController')
+const cityController = require('../../../controller/admin/master/CityController')
+const adminAuthMiddleware = require('../../../middleware/adminAuthMiddleware')
 
-router.post("/add", cityController.createCity)
-router.get("/get/:cityId", cityController.getCityById)
-router.get("/get", cityController.getAllCity)
-router.post("/update/:cityId", cityController.updateCity)
-router.delete("/delete/:cityId", cityController. deleteCity)
+router.post("/add",adminAuthMiddleware, cityController.createCity)
+router.get("/get/:cityId",adminAuthMiddleware, cityController.getCityById)
+router.post("/update",adminAuthMiddleware, cityController.updateCity)
+router.delete("/delete/:cityId",adminAuthMiddleware, cityController.deleteCity)
 module.exports = router
