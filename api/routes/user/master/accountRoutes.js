@@ -1,0 +1,11 @@
+const express = require("express")
+const router = express.Router()
+const accountController = require('../../../controller/user/master/accountController')
+const userAuthMiddleware = require('../../../middleware/userAuthMiddleware')
+
+router.post("/add",userAuthMiddleware, accountController.createAccount)
+router.get("/get/:accountId", accountController. getAccountById)
+router.get("/get", accountController.getAllAccounts)
+router.post("/update/:accountId",userAuthMiddleware, accountController. updateAccount)
+router.delete("/delete/:accountId",userAuthMiddleware, accountController.deleteAccount)
+module.exports = router

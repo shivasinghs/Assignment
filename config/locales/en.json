@@ -1,7 +1,94 @@
 {
+	"User": {
+		"Auth": {
+			"USER_CREATION_FAILED": "User could not be created",
+			"INVALID_EMAIL_FORMAT": "Invalid email format",
+			"INVALID_PASSWORD_FORMAT": "Invalid password format",
+			"INVALID_CREDENTIALS": "Invalid email or password",
+			"LOGIN_REQUIRED": "Please log in to access this route",
+			"USER_NOT_FOUND": "User no longer exists",
+			"INVALID_USER_TYPE": "Invalid user type",
+			"INVALID_TOKEN": "Invalid token. Please log in again",
+			"USER_CREATED": "User successfully created",
+			"LOGIN_SUCCESS": "Login successful",
+			"EMAIL_ALREADY_EXISTS": "Email Already Exists"
+		}
+	},
 	"Admin": {
 		"Auth": {
-			"ADMIN_ALREADY_EXISTS": "Admin.Auth.ADMIN_ALREADY_EXISTS"
+			"PERMISSION_DENIED": "You do not have permission to perform this action",
+			"ADMIN_CREATION_FAILED": "Admin could not be created",
+			"ADMIN_ALREADY_EXISTS": "Admin already exists",
+			"ADMIN_CREATED_SUCCESSFULLY": "Admin successfully created",
+			"ADMIN_UPDATED_SUCCESSFULLY": "Admin successfully updated",
+			"ADMIN_DELETED_SUCCESSFULLY": "Admin successfully deleted",
+			"LOGIN_SUCCESS": "Admin successfully logged in",
+			"INVALID_CREDENTIALS": "Invalid email or password",
+			"ADMIN_CREATED": "Admin successfully created"
 		}
+	},
+	"Category": {
+		"CATEGORY_NOT_FOUND": "No categories found",
+		"CATEGORY_CREATED": "Category successfully created",
+		"CATEGORY_UPDATED": "Category successfully updated",
+		"CATEGORY_DELETED": "Category successfully deleted",
+		"CATEGORY_NAME_REQUIRED": "Category name is required",
+		"CATEGORY_TRANSLATIONS_REQUIRED": "Translations for the category are required",
+		"CATEGORIES_LISTED": "Categories successfully listed",
+		"CATEGORY_TRANSLATIONS_EXISTS": "Category Translations exists already",
+		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Category assigned to a account "
+	},
+	"SubCategory": {
+		"SUBCATEGORY_CREATED": "Subcategory successfully created",
+		"SUBCATEGORY_FETCHED": "Subcategories successfully fetched",
+		"SUBCATEGORY_UPDATED": "Subcategory successfully updated",
+		"SUBCATEGORY_DELETED": "Subcategory successfully deleted",
+		"SUBCATEGORY_NOT_FOUND": "No subcategories found",
+		"SUBCATEGORY_TRANSLATIONS_REQUIRED": "Translations for the subcategory are required",
+		"SUBCATEGORY_TRANSLATIONS_EXISTS": "SubCategory Translations exists already",
+		"SUBCATEGORY_ASSIGNED_TO_ACCOUNT": "SubCategory assigned to a account "
+	},
+	"Country": {
+		"COUNTRY_NOT_FOUND": "No countries found",
+		"COUNTRY_CREATED": "Country successfully created",
+		"COUNTRY_UPDATED": "Country successfully updated",
+		"COUNTRY_DELETED": "Country successfully deleted",
+		"COUNTRY_NAME_REQUIRED": "Country name is required",
+		"COUNTRY_TRANSLATIONS_REQUIRED": "Translations for the country are required",
+		"COUNTRY_FETCHED": "Countries successfully fetched",
+		"COUNTRY_TRANSLATIONS_EXISTS": "Country Translations exists already"
+	},
+	"City": {
+		"CITY_NOT_FOUND": "No cities found",
+		"CITY_CREATED": "City successfully created",
+		"CITY_UPDATED": "City successfully updated",
+		"CITY_DELETED": "City successfully deleted",
+		"CITY_FETCHED": "Cities successfully fetched",
+		"CITY_TRANSLATIONS_REQUIRED": "Translations for the city are required",
+		"CITY_TRANSLATIONS_EXISTS": "City Translations exists already"
+	},
+	"Account": {
+		"ACCOUNT_CREATED": "Account successfully created",
+		"ACCOUNT_FETCHED": "Accounts successfully fetched",
+		"ACCOUNT_UPDATED": "Account successfully updated",
+		"ACCOUNT_DELETED": "Account successfully deleted",
+		"ACCOUNT_NOT_FOUND": "No accounts found",
+		"ACCOUNT_ACTIVATED": "Account successfully activated",
+		"ACCOUNT_DEACTIVATED": "Account successfully deactivated",
+		"ACCOUNT_PASSWORD_UPDATED": "Account password successfully updated",
+		"ACCOUNT_NOT_ACTIVE": "Account is not active",
+		"ACCOUNT_CREATION_FAILED": "Account creation failed",
+		"ACCOUNT_UPDATE_FAILED": "Account update failed"
+	},
+	"Messages": {
+		"INTERNAL_ERROR": "Internal server error",
+		"NO_RESOURCES_FOUND": "No resources found",
+		"RESOURCE_NOT_FOUND": "Resource not found",
+		"INVALID_INPUT": "Invalid input",
+		"EMAIL_ALREADY_EXISTS": "Email already exists",
+		"SERVER_ERROR": "Server error"
+	},
+	"messages": {
+		"INVALID_TOKEN": "messages.INVALID_TOKEN"
 	}
 }

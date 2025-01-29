@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
+const MstCountry = require('./MstCountry');
+const MstCity = require('./MstCity');
 
 const User = sequelize.define('User', {
   id: {
@@ -21,13 +23,23 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  country: {
-    type: DataTypes.STRING,
+  countryId: {
+    type: DataTypes.UUID,
     allowNull: false,
+    references: {
+      model: MstCountry, 
+      key: 'id',
+    },
+    field: 'country_id',
   },
-  city: {
-    type: DataTypes.STRING,
+  cityId: {
+    type: DataTypes.UUID,
     allowNull: false,
+    references: {
+      model: MstCity, 
+      key: 'id',
+    },
+    field: 'city_id',
   },
   companyName: {
     type: DataTypes.STRING,

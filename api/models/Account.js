@@ -1,21 +1,46 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
+const Category = require("./Category")
+const SubCategory = require("./SubCategory")
+const User = require("./User")
 
 const Account = sequelize.define('Account', {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4, 
+    defaultValue: DataTypes.UUIDV4,
     allowNull: false,
   },
-  name: {
-    type: DataTypes.STRING,
+  categoryId: {
+    type: DataTypes.UUID,
+    field: "category_id",
     allowNull: false,
+    references: {
+      model: Category,
+      key: "id",
+    },
   },
-  : {
-    type: DataTypes.STRING,
+  subCategoryId: {
+    type: DataTypes.UUID,
+    field: "subcategory_id",
     allowNull: false,
-    unique: true,
+    references: {
+      model: SubCategory,
+      key: "id",
+    },
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: true,  
+  },
+  userId: {
+    type: DataTypes.UUID,
+    field: "user_id",
+    allowNull: false,
+    references: {
+      model: User,
+      key: "id",
+    },
   },
   isActive: {
     type: DataTypes.BOOLEAN,
@@ -26,7 +51,7 @@ const Account = sequelize.define('Account', {
     type: DataTypes.BIGINT,
     field: 'created_at',
     allowNull: false,
-    defaultValue: Math.floor(Date.now() / 1000),
+    defaultValue: Math.floor(Date.now() / 1000),  
   },
   createdBy: {
     type: DataTypes.UUID,

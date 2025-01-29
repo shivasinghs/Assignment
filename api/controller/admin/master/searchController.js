@@ -1,6 +1,7 @@
-const { Category, CategoryTrans, SubCategory, SubCategoryTrans } = require("../../../models/index");
+const { Category, CategoryTrans, SubCategory, SubCategoryTrans, User, MstCity, MstCountry, Account } = require("../../../models/index");
 const { HTTP_STATUS_CODE, Op } = require("../../../../config/constants");
 const i18n = require("../../../../config/i18n");
+const Sequelize = require('../../../../config/sequelize')
 
 const listCategoriesWithSubcategories = async (req, res) => {
   try {
@@ -62,10 +63,78 @@ const listCategoriesWithSubcategories = async (req, res) => {
   } catch (error) {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
 
-module.exports = { listCategoriesWithSubcategories };
+const getUsersWithFilters = async (req, res) => {
+  try {
+    const { city, country, search } = req.query;
+
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { email: { [Op.iLike]: `%${search}%` } },
+        { name: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    if (city) {
+      where['cityId'] = city;
+    }
+
+    if (country) {
+      where['countryId'] = country;
+    }
+
+    const users = await User.findAll({
+      where,
+      include: [
+        {
+          model: MstCity,
+          as: 'city',
+          required: false, 
+          where: city ? { id: city } : undefined,
+          attributes: ['id'], 
+        },
+        {
+          model: MstCountry,
+          as: 'country',
+          required: false,
+          where: country ? { id: country } : undefined,
+          attributes: ['id'], 
+        },
+        {
+          model: Account,
+          as: 'accounts',
+          required: false, 
+          attributes: [], 
+        },
+      ],
+      attributes: [
+        'id', 'name', 'email',
+        [Sequelize.fn('COUNT', Sequelize.col('accounts.id')), 'accountCount'], 
+      ],
+      group: ['User.id', 'city.id', 'country.id'], 
+    });
+
+    return res.status(200).json({
+      msg: "Users fetched successfully",
+      data: users,
+    });
+  } catch (error) {
+    console.error("Error in fetching users:", error);
+    return res.status(500).json({
+      msg: "Internal server error",
+      data: error.message,
+      err: "",
+    });
+  }
+};
+
+
+
+module.exports = { listCategoriesWithSubcategories ,getUsersWithFilters};

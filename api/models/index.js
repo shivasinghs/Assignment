@@ -8,7 +8,8 @@ const MstCountryTrans = require("./MstCountryTrans")
 const MstCityTrans = require("./MstCityTrans")
 const CategoryTrans = require("./CategoryTrans")
 const SubCategoryTrans = require("./SubCategoryTrans")
-const sequelize = require("../../config/sequelize")
+const Account = require('./Account');
+const AccountNameTrans = require('./AccountNameTrans')
 
 Category.hasMany(SubCategory, {
   foreignKey: "categoryId",
@@ -73,6 +74,32 @@ MstCityTrans.belongsTo(MstCity, {
 })
 
 
+User.hasMany(Account, {
+  foreignKey: 'userId',
+  as: 'accounts',
+});
+
+User.belongsTo(MstCountry, {
+  foreignKey: 'countryId', 
+  as: 'country', 
+});
+
+User.belongsTo(MstCity, {
+  foreignKey: 'cityId', 
+  as: 'city', 
+});
+
+MstCountry.hasMany(User, {
+  foreignKey: 'countryId', 
+  as: 'users', 
+});
+
+MstCity.hasMany(User, {
+  foreignKey: 'cityId', 
+  as: 'users', 
+});
+
+
 
 module.exports = {
   Admin,
@@ -84,5 +111,7 @@ module.exports = {
   MstCountryTrans,
   MstCityTrans,
   CategoryTrans,
-  SubCategoryTrans
+  SubCategoryTrans,
+  Account,
+  AccountNameTrans
 }

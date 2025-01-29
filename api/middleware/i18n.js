@@ -9,7 +9,7 @@ const languageSelect = (req, res, next) => {
   } else {
     i18n.setLocale("en"); // Fall back to default language
   }
-
+  
   next();
 };
 

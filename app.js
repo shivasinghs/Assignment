@@ -11,7 +11,7 @@ try {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cors(corsOptions));
-  app.use(i18n.init);
+  app.use(i18n.init)
   app.use(languageSelect);
  
   app.use(route);
@@ -23,8 +23,6 @@ bootstrap()
 // .catch(err => {
 //   console.error( err);
 // });
-
-
 
   app.get("/", (req, res) => {
     res.send("Hello from the backend!");

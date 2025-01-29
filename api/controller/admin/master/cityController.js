@@ -7,7 +7,7 @@ const createCity = async (req, res) => {
   try {
     const { countryId, translations } = req.body;
 
-    const validation = new VALIDATOR(req.body, validationRules.City);
+    const validation = new VALIDATOR(req.body, validationRules.TransController);
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
@@ -59,8 +59,8 @@ const createCity = async (req, res) => {
   } catch (error) {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -69,14 +69,6 @@ const getCityById = async (req, res) => {
   try {
     const { cityId } = req.params;
 
-    const validation = new VALIDATOR(req.params, { cityId: "required|string" });
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
-      });
-    }
 
     const city = await MstCity.findByPk(cityId, {
       include: [
@@ -103,8 +95,40 @@ const getCityById = async (req, res) => {
   } catch (error) {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
+    });
+  }
+};
+
+const getAllCity = async (req, res) => {
+  try {
+    const city = await MstCity.findAll({
+      include: [
+        {
+          model: MstCityTrans,
+          as: "translations"
+        }
+      ]
+    });
+    if (!city) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("City.CITY_NOT_FOUND"),
+        data: "",
+        err: null,
+      });
+    }
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("City.CITY_FETCHED"),
+      data: city,
+      err: null,
+    });
+  } catch (error) {
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -114,14 +138,13 @@ const updateCity = async (req, res) => {
     const { cityId } = req.params;
     const { translations } = req.body;
 
-    const paramValidation = new VALIDATOR(req.params, { cityId: "required|string" });
-    const bodyValidation = new VALIDATOR(req.body, validationRules.City);
-    if (paramValidation.fails() || bodyValidation.fails()) {
+    
+    const Validation = new VALIDATOR(req.body, validationRules.TransController);
+    if (Validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: {
-          paramErrors: paramValidation.errors.all(),
-          bodyErrors: bodyValidation.errors.all(),
+        data: {  
+          Errors:Validation.errors.all(),
         },
         err: null,
       });
@@ -168,8 +191,8 @@ const updateCity = async (req, res) => {
   } catch (error) {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -177,15 +200,6 @@ const updateCity = async (req, res) => {
 const deleteCity = async (req, res) => {
   try {
     const { cityId } = req.params;
-
-    const validation = new VALIDATOR(req.params, { cityId: "required|string" });
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
-      });
-    }
 
     const city = await MstCity.findByPk(cityId);
     if (!city) {
@@ -209,8 +223,8 @@ const deleteCity = async (req, res) => {
   } catch (error) {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: null,
     });
   }
 };
@@ -218,6 +232,7 @@ const deleteCity = async (req, res) => {
 module.exports = {
   createCity,
   getCityById,
+  getAllCity,
   updateCity,
   deleteCity,
 };

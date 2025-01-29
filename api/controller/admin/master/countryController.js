@@ -18,20 +18,25 @@ const createCountry = async (req, res) => {
       });
     }
     
-    // Check for existing translations before continuing
     for (let translation of translations) {
       const existingTranslation = await MstCountryTrans.findOne({
         where: {
           lang: translation.lang,
-          name: translation.name
-        }
+          name: translation.name,
+        },
+        include: [
+          {
+            model: MstCountry,
+            as: 'country',
+          },
+        ],
       });
 
       if (existingTranslation) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
           msg: i18n.__("Country.COUNTRY_TRANSLATIONS_EXISTS"),
-          data: "",
-          err: null
+          data: existingTranslation,
+          err: null,
         });
       }
     }
@@ -63,8 +68,8 @@ const createCountry = async (req, res) => {
     console.error("Error in creating country:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: null,
     });
   }
 };
@@ -104,20 +109,51 @@ const getCountryById = async (req, res) => {
   }
 };
 
+const getAllCountry = async (req, res) => {
+  try {
+    const country = await MstCountry.findAll({
+      include: [
+        {
+          model: MstCountryTrans,
+          as: "translations"
+        }
+      ]
+    });
+
+    if (!country) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
+        data: "",
+        err: null
+      });
+    }
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("Country.COUNTRY_FETCHED"),
+      data: country,
+      err: null
+    });
+  } catch (error) {
+    console.error("Error in getting country:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: null,
+    });
+  }
+};
 
 const updateCountry = async (req, res) => {
   try {
     const { countryId } = req.params;
     const { translations } = req.body;
 
-    const paramValidation = new VALIDATOR(req.params, { countryId: "required|string" });
-    const bodyValidation = new VALIDATOR(req.body, validationRules.TransController);
-    if (paramValidation.fails() || bodyValidation.fails()) {
+    const Validation = new VALIDATOR(req.body, validationRules.TransController);
+    if (Validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: {
-          paramErrors: paramValidation.errors.all(),
-          bodyErrors: bodyValidation.errors.all()
+        data: {  
+          Errors:Validation.errors.all(),
         },
         err: null,
       });
@@ -166,8 +202,8 @@ const updateCountry = async (req, res) => {
     console.error("Error in updating country:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -175,15 +211,6 @@ const updateCountry = async (req, res) => {
 const deleteCountry = async (req, res) => {
   try {
     const { countryId } = req.params;
-
-    const validation = new VALIDATOR(req.params, { countryId: "required|string" });
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
-      });
-    }
 
     const country = await MstCountry.findByPk(countryId);
 
@@ -215,8 +242,8 @@ const deleteCountry = async (req, res) => {
     console.error("Error in deleting country:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -225,6 +252,7 @@ const deleteCountry = async (req, res) => {
 module.exports = {
   createCountry,
   getCountryById,
+  getAllCountry,
   updateCountry,
   deleteCountry
 };

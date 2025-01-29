@@ -82,16 +82,6 @@ const getSubCategoryById = async (req, res) => {
   try {
     const { subCategoryId } = req.params;
 
-    // Validate subcategoryId in params
-    const validation = new VALIDATOR(req.params, { subCategoryId: "required|string" });
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
-      });
-    }
-
     // Find subcategory with translations and category
     const subCategory = await SubCategory.findByPk(subCategoryId, {
       include: [
@@ -123,8 +113,8 @@ const getSubCategoryById = async (req, res) => {
     console.error("Error in getting subcategory:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -134,15 +124,12 @@ const updateSubCategory = async (req, res) => {
     const { subCategoryId } = req.params;
     const { translations } = req.body;
 
-    // Validate inputs
-    const paramValidation = new VALIDATOR(req.params, { subCategoryId: "required|string" });
-    const bodyValidation = new VALIDATOR(req.body, validationRules.TransController);
-    if (paramValidation.fails() || bodyValidation.fails()) {
+    const Validation = new VALIDATOR(req.body, validationRules.TransController);
+    if (Validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: {
-          paramErrors: paramValidation.errors.all(),
-          bodyErrors: bodyValidation.errors.all(),
+        data: {  
+          Errors:Validation.errors.all(),
         },
         err: null,
       });
@@ -192,8 +179,8 @@ const updateSubCategory = async (req, res) => {
     console.error("Error in updating subcategory:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -201,18 +188,7 @@ const updateSubCategory = async (req, res) => {
 const deleteSubCategory = async (req, res) => {
   try {
     const { subCategoryId } = req.params;
-
-    // Validate subcategoryId
-    const validation = new VALIDATOR(req.params, { subCategoryId: "required|string" });
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
-      });
-    }
-
-    // Check if the subcategory exists
+   
     const subCategory = await SubCategory.findByPk(subCategoryId);
     if (!subCategory) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
@@ -222,11 +198,24 @@ const deleteSubCategory = async (req, res) => {
       });
     }
 
-    // Soft delete the subcategory
+    const accountsWithCategory = await Account.count({
+      where: {
+        subCategoryId: subCategoryId,
+      }
+    });
+
+    if (accountsWithCategory > 0) {
+      return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
+        msg: i18n.__("Category.CATEGORY_ASSIGNED_TO_ACCOUNT"),
+        data: "",
+        err: null
+      });
+    }
+
     subCategory.isDeleted = true;
     await subCategory.save();
 
-    // Mark translations as deleted
+    
     await SubCategoryTrans.update(
       { isDeleted: true },
       { where: { subcategoryId: subCategory.id } }
@@ -241,8 +230,47 @@ const deleteSubCategory = async (req, res) => {
     console.error("Error in deleting subcategory:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
+    });
+  }
+};
+
+const getAllSubCategories = async (req, res) => {
+  try {
+   
+    const subCategories = await SubCategory.findAll({
+      include: [
+        {
+          model: SubCategoryTrans,
+          as: "translations",  
+        },
+        {
+          model: Category,
+          as: "category", 
+        },
+      ],
+    });
+
+    if (subCategories.length === 0) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("SubCategory.SUBCATEGORIES_NOT_FOUND"),
+        data: "",
+        err: null,
+      });
+    }
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("SubCategory.SUBCATEGORIES_FETCHED"),
+      data: subCategories,
+      err: null,
+    });
+  } catch (error) {
+    console.error("Error in getting all subcategories:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: null,
     });
   }
 };
@@ -250,6 +278,7 @@ const deleteSubCategory = async (req, res) => {
 module.exports = {
   createSubCategory,
   getSubCategoryById,
+  getAllSubCategories,
   updateSubCategory,
   deleteSubCategory,
 };
