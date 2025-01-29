@@ -38,6 +38,13 @@ const createCategory = async (req, res) => {
       }
     }
 
+    const newCategory = await Category.create({
+      id: uuidv4(),
+      isActive: true,
+      createdAt: Math.floor(Date.now() / 1000),
+      createdBy : adminId
+    });
+
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
@@ -48,13 +55,6 @@ const createCategory = async (req, res) => {
         createdBy : adminId
       });
     }
-
-    const newCategory = await Category.create({
-      id: uuidv4(),
-      isActive: true,
-      createdAt: Math.floor(Date.now() / 1000),
-      createdBy : adminId
-    });
 
     await CategoryTrans.bulkCreate(translationsData);
 
@@ -79,17 +79,17 @@ const getCategoryById = async (req, res) => {
   try {
     const { categoryId } = req.params;
 
-    const validation = new VALIDATOR(req.body, {categoryId : validationRules.CategoryController.categoryId});
+    const validation = new VALIDATOR(req.params, {categoryId : validationRules.CategoryController.categoryId});
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
+        data: "",
+        err: validation.errors.all(),
       });
     }
 
     const query = `
-      SELECT c.*, ct.*
+      SELECT c.id, ct.*
       FROM category c
       LEFT JOIN category_trans ct ON ct.category_id = c.id
       WHERE c.id = :categoryId
@@ -134,13 +134,14 @@ const updateCategory = async (req, res) => {
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
+        data: "",
+        err: validation.errors.all(),
       });
     }
 
     const category = await Category.findOne({
       where: { id: categoryId, isDeleted: false },
+      attributes: ['id'],
     });
 
     if (!category) {
@@ -156,37 +157,31 @@ const updateCategory = async (req, res) => {
     await category.save();
 
     await CategoryTrans.update(
-      { isDeleted: true, updatedAt: Math.floor(Date.now() / 1000), updatedBy: adminId },
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
       { where: { categoryId: categoryId, isDeleted: false } }
     );
 
-    const langs = [];
-    const names = [];
-    
+
     for (let i = 0; i < translations.length; i++) {
-      langs.push(translations[i].lang);
-      names.push(translations[i].name);
-    }
- 
-    const query = `
-    SELECT id
-    FROM category_trans
-    WHERE lang IN (:langs) AND name IN (:names) AND is_deleted = false AND category_id != :categoryId
-  `;
+      const query = `
+        SELECT id FROM category_trans 
+        WHERE lang = :lang AND name = :name AND is_deleted = false AND category_id != :categoryId
+      `;  
 
-  const existingTranslations = await sequelize.query(query, {
-    replacements: { langs, names, categoryId },
-    type: sequelize.QueryTypes.SELECT,
-    raw: true,
-  });
+      const existingTranslation = await sequelize.query(query, {
+        replacements: { lang: translations[i].lang, name: translations[i].name, categoryId },
+        type: sequelize.QueryTypes.SELECT,
+        raw: true,
+      });
 
-  if (existingTranslations.length > 0) {
-    return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-      msg: i18n.__("Category.CATEGORY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CATEGORY"),
-      data: "",
-      err: null,
-    });
-  }
+      if (existingTranslation.length > 0) {
+        return res.status(HTTP_STATUS_CODE.CONFLICT).json({
+          msg: i18n.__("Category.CATEGORY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CATEGORY"),
+          data: "",
+          err: null,
+        });
+      }
+    }   
 
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
@@ -204,7 +199,7 @@ const updateCategory = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("Category.CATEGORY_UPDATED"),
-      data: category.id ,
+      data: category ,
       err: null,
     });
   } catch (error) {
@@ -222,12 +217,12 @@ const deleteCategory = async (req, res) => {
     const { categoryId } = req.params;
     const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.body, {categoryId : validationRules.CategoryController.categoryId});
+    const validation = new VALIDATOR(req.params, {categoryId : validationRules.CategoryController.categoryId});
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
-        err: null,
+        data: "",
+        err: validation.errors.all(),
       });
     }
 
@@ -260,12 +255,12 @@ const deleteCategory = async (req, res) => {
     }
 
     await CategoryTrans.update(
-      { isDeleted: true, updatedAt: Math.floor(Date.now() / 1000), deletedAt: Math.floor(Date.now() / 1000),  deletedBy: adminId },
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000),  deletedBy: adminId },
       { where: { categoryId: categoryId, isDeleted: false } }
     );
 
     await Category.update(
-      { isDeleted: true, updatedAt: Math.floor(Date.now() / 1000), deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
       { where: { id: categoryId, isDeleted: false } }
     );
 
