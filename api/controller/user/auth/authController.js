@@ -2,7 +2,8 @@ const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE,Token_expiry } = re
 const { User,MstCountry,MstCity } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
-const i18n = require("../../../../config/i18n");
+// const i18n = require("../../../../config/i18n");
+const i18n = require('../../../../config/i18n.js');
 const sequelize = require("../../../../config/sequelize");
 
 const SignUp = async (req, res) => {
