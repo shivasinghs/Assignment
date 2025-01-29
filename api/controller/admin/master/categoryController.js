@@ -17,37 +17,25 @@ const createCategory = async (req, res) => {
       });
     }
 
-    const langs = [];
-    const names = [];
-    
     for (let i = 0; i < translations.length; i++) {
-      langs.push(translations[i].lang);
-      names.push(translations[i].name);
-    }
-
-    const translationsDataExits = [];
-    for (let i = 0; i < translations.length; i++) {
-     
       const query = `
-      SELECT id
-      FROM category_trans
-      WHERE lang IN (:langs) AND name IN (:names) AND is_deleted = false
-    `;
+        SELECT id FROM category_trans 
+        WHERE lang = :lang AND name = :name AND is_deleted = false
+      `;
 
-    const existingTranslations = await sequelize.query(query, {
-      replacements: { langs, names },
-      type: sequelize.QueryTypes.SELECT,
-      raw: true,  
-    });
-
-    if (existingTranslations.length > 0) {
-      return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-        msg: i18n.__("Category.CATEGORY_TRANSLATIONS_EXISTS"),
-        data: "",
-        err: null
+      const existingTranslation = await sequelize.query(query, {
+        replacements: { lang: translations[i].lang, name: translations[i].name },
+        type: sequelize.QueryTypes.SELECT,
+        raw: true,
       });
-    }
 
+      if (existingTranslation.length > 0) {
+        return res.status(HTTP_STATUS_CODE.CONFLICT).json({
+          msg: i18n.__("Category.CATEGORY_TRANSLATIONS_EXISTS"),
+          data: "",
+          err: null,
+        });
+      }
     }
 
     const translationsData = [];
