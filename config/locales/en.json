@@ -1,88 +1,74 @@
 {
-	"User": {
+	"USER": {
 		"Auth": {
-			"USER_CREATION_FAILED": "User could not be created",
+			"USER_CREATION_FAILED": "User creation failed",
 			"INVALID_EMAIL_FORMAT": "Invalid email format",
 			"INVALID_PASSWORD_FORMAT": "Invalid password format",
 			"INVALID_CREDENTIALS": "Invalid email or password",
 			"LOGIN_REQUIRED": "Please log in to access this route",
 			"USER_NOT_FOUND": "User no longer exists",
+			"FIRST_NAME_REQUIRED": "First name is required",
+			"LAST_NAME_REQUIRED": "Last name is required",
+			"PASSWORD_TOO_SHORT": "Password must be at least 8 characters long",
+			"PASSWORDS_MISMATCH": "Password and confirmation must match",
 			"INVALID_USER_TYPE": "Invalid user type",
 			"INVALID_TOKEN": "Invalid token. Please log in again",
 			"USER_CREATED": "User successfully created",
 			"LOGIN_SUCCESS": "Login successful",
-			"EMAIL_ALREADY_EXISTS": "Email Already Exists"
+			"PROFILE_UPDATED": "Profile successfully updated"
 		}
 	},
-	"Admin": {
+	"ADMIN": {
 		"Auth": {
 			"PERMISSION_DENIED": "You do not have permission to perform this action",
-			"ADMIN_CREATION_FAILED": "Admin could not be created",
-			"ADMIN_ALREADY_EXISTS": "Admin already exists",
-			"ADMIN_CREATED_SUCCESSFULLY": "Admin successfully created",
-			"ADMIN_UPDATED_SUCCESSFULLY": "Admin successfully updated",
-			"ADMIN_DELETED_SUCCESSFULLY": "Admin successfully deleted",
+			"CREATION_FAILED": "Admin creation failed",
+			"ALREADY_EXISTS": "Admin already exists",
+			"CREATED_SUCCESSFULLY": "Admin successfully created",
+			"UPDATED_SUCCESSFULLY": "Admin successfully updated",
+			"DELETED_SUCCESSFULLY": "Admin successfully deleted",
 			"LOGIN_SUCCESS": "Admin successfully logged in",
 			"INVALID_CREDENTIALS": "Invalid email or password",
-			"ADMIN_CREATED": "Admin successfully created"
+			"CREATED": "Admin successfully created"
 		}
 	},
-	"Category": {
-		"CATEGORY_NOT_FOUND": "No categories found",
-		"CATEGORY_CREATED": "Category successfully created",
-		"CATEGORY_UPDATED": "Category successfully updated",
-		"CATEGORY_DELETED": "Category successfully deleted",
-		"CATEGORY_NAME_REQUIRED": "Category name is required",
-		"CATEGORY_TRANSLATIONS_REQUIRED": "Translations for the category are required",
-		"CATEGORIES_LISTED": "Categories successfully listed",
-		"CATEGORY_TRANSLATIONS_EXISTS": "Category Translations exists already",
-		"CATEGORY_ASSIGNED_TO_ACCOUNT": "Category assigned to a account ",
-		"CATEGORY_FETCHED": "Category.CATEGORY_FETCHED",
-		"CATEGORIES_FETCHED": "Category.CATEGORIES_FETCHED",
-		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "Category.CATEGORY_WITH_SUBCATEGORIES_FETCHED"
+	"CATEGORY": {
+		"NOT_FOUND": "No categories found",
+		"CREATED": "Category successfully created",
+		"UPDATED": "Category successfully updated",
+		"DELETED": "Category successfully deleted",
+		"NAME_REQUIRED": "Category name is required",
+		"TRANSLATIONS_REQUIRED": "Translations for the category are required",
+		"LISTED": "Categories successfully listed",
+		"TRANSLATIONS_EXISTS": "Category translations already exist",
+		"FETCHED": "Categories successfully fetched",
+		"ASSIGNED_TO_ACCOUNT": "Category assigned to account"
 	},
-	"SubCategory": {
-		"SUBCATEGORY_CREATED": "Subcategory successfully created",
-		"SUBCATEGORY_FETCHED": "Subcategories successfully fetched",
-		"SUBCATEGORY_UPDATED": "Subcategory successfully updated",
-		"SUBCATEGORY_DELETED": "Subcategory successfully deleted",
-		"SUBCATEGORY_NOT_FOUND": "No subcategories found",
-		"SUBCATEGORY_TRANSLATIONS_REQUIRED": "Translations for the subcategory are required",
-		"SUBCATEGORY_TRANSLATIONS_EXISTS": "SubCategory Translations exists already",
-		"SUBCATEGORY_ASSIGNED_TO_ACCOUNT": "SubCategory assigned to a account ",
-		"SUBCATEGORIES_FETCHED": "SubCategory.SUBCATEGORIES_FETCHED"
+	"SUBCATEGORY": {
+		"CREATED": "Subcategory successfully created",
+		"FETCHED": "Subcategories successfully fetched",
+		"UPDATED": "Subcategory successfully updated",
+		"DELETED": "Subcategory successfully deleted",
+		"NOT_FOUND": "No subcategories found",
+		"TRANSLATIONS_REQUIRED": "Translations for the subcategory are required",
+		"TRANSLATIONS_EXISTS": "Subcategory translations already exist"
 	},
-	"Country": {
-		"COUNTRY_NOT_FOUND": "No countries found",
-		"COUNTRY_CREATED": "Country successfully created",
-		"COUNTRY_UPDATED": "Country successfully updated",
-		"COUNTRY_DELETED": "Country successfully deleted",
-		"COUNTRY_NAME_REQUIRED": "Country name is required",
-		"COUNTRY_TRANSLATIONS_REQUIRED": "Translations for the country are required",
-		"COUNTRY_FETCHED": "Countries successfully fetched",
-		"COUNTRY_TRANSLATIONS_EXISTS": "Country Translations exists already"
+	"COUNTRY": {
+		"NOT_FOUND": "No countries found",
+		"CREATED": "Country successfully created",
+		"UPDATED": "Country successfully updated",
+		"DELETED": "Country successfully deleted",
+		"NAME_REQUIRED": "Country name is required",
+		"TRANSLATIONS_REQUIRED": "Translations for the country are required",
+		"FETCHED": "Countries successfully fetched",
+		"TRANSLATIONS_EXISTS": "Country translations already exist"
 	},
-	"City": {
-		"CITY_NOT_FOUND": "No cities found",
-		"CITY_CREATED": "City successfully created",
-		"CITY_UPDATED": "City successfully updated",
-		"CITY_DELETED": "City successfully deleted",
-		"CITY_FETCHED": "Cities successfully fetched",
-		"CITY_TRANSLATIONS_REQUIRED": "Translations for the city are required",
-		"CITY_TRANSLATIONS_EXISTS": "City Translations exists already"
-	},
-	"Account": {
-		"ACCOUNT_CREATED": "Account successfully created",
-		"ACCOUNT_FETCHED": "Accounts successfully fetched",
-		"ACCOUNT_UPDATED": "Account successfully updated",
-		"ACCOUNT_DELETED": "Account successfully deleted",
-		"ACCOUNT_NOT_FOUND": "No accounts found",
-		"ACCOUNT_ACTIVATED": "Account successfully activated",
-		"ACCOUNT_DEACTIVATED": "Account successfully deactivated",
-		"ACCOUNT_PASSWORD_UPDATED": "Account password successfully updated",
-		"ACCOUNT_NOT_ACTIVE": "Account is not active",
-		"ACCOUNT_CREATION_FAILED": "Account creation failed",
-		"ACCOUNT_UPDATE_FAILED": "Account update failed"
+	"CITY": {
+		"NOT_FOUND": "No cities found",
+		"CREATED": "City successfully created",
+		"UPDATED": "City successfully updated",
+		"DELETED": "City successfully deleted",
+		"FETCHED": "Cities successfully fetched",
+		"TRANSLATIONS_REQUIRED": "Translations for the city are required"
 	},
 	"Messages": {
 		"INTERNAL_ERROR": "Internal server error",
@@ -92,10 +78,19 @@
 		"EMAIL_ALREADY_EXISTS": "Email already exists",
 		"SERVER_ERROR": "Server error"
 	},
+	"ACCOUNT": {
+		"CREATED": "Account successfully created",
+		"NOT_FOUND": "Account not found",
+		"FETCHED": "Accounts successfully fetched",
+		"UPDATED": "Account successfully updated",
+		"DELETED": "Account successfully deleted"
+	},
 	"messages": {
-		"INVALID_TOKEN": "messages.INVALID_TOKEN",
-		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
-		"NO_AUTH_HEADER": "messages.NO_AUTH_HEADER",
-		"INVALID_INPUT": "messages.INVALID_INPUT"
+		"INVALID_TOKEN": "messages.INVALID_TOKEN"
+	},
+	"Admin": {
+		"Auth": {
+			"LOGIN_SUCCESS": "Admin.Auth.LOGIN_SUCCESS"
+		}
 	}
 }

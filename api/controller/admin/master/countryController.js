@@ -19,16 +19,22 @@ const createCountry = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM mst_country_trans 
-        WHERE lang = :lang AND name = :name AND is_deleted = false
+        SELECT id 
+        FROM mst_country_trans 
+        WHERE is_deleted = false
+        AND LOWER(lang) = LOWER(:lang) 
+        AND LOWER(name) = LOWER(:name)
       `;
-
+    
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name },
+        replacements: { 
+          lang: translations[i].lang, 
+          name: translations[i].name 
+        },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
-
+    
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
           msg: i18n.__("Country.COUNTRY_TRANSLATIONS_EXISTS"),
@@ -36,7 +42,7 @@ const createCountry = async (req, res) => {
           err: null,
         });
       }
-    }
+    }    
 
     const newCountry = await MstCountry.create({
       id: uuidv4(),
@@ -88,7 +94,7 @@ const getCountryById = async (req, res) => {
     }
 
     const query = `
-      SELECT c.id, ct.*
+      SELECT c.id,ct.id,ct.name
       FROM mst_country c
       LEFT JOIN mst_country_trans ct ON ct.country_id = c.id
       WHERE c.id = :countryId
@@ -152,8 +158,13 @@ const updateCountry = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM mst_country_trans 
-        WHERE lang = :lang AND name = :name AND is_deleted = false AND country_id != :countryId
+         SELECT id 
+         FROM mst_country_trans 
+         WHERE is_deleted = false
+         AND country_id != :countryId
+         AND LOWER(lang) = LOWER(:lang)
+         AND LOWER(name) = LOWER(:name)
+
       `;
 
       const existingTranslation = await sequelize.query(query, {
@@ -171,15 +182,6 @@ const updateCountry = async (req, res) => {
       }
     }
 
-    country.updatedAt = Math.floor(Date.now() / 1000);
-    country.updatedBy = adminId;
-    await country.save();
-
-    await MstCountryTrans.update(
-      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { countryId: countryId, isDeleted: false } }
-    );
-
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
@@ -191,6 +193,15 @@ const updateCountry = async (req, res) => {
         createdAt: Math.floor(Date.now() / 1000),
       });
     }
+    
+    country.updatedAt = Math.floor(Date.now() / 1000);
+    country.updatedBy = adminId;
+    await country.save();
+
+    await MstCountryTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { countryId: countryId, isDeleted: false } }
+    );
 
     await MstCountryTrans.bulkCreate(translationsData);
 
@@ -262,9 +273,76 @@ const deleteCountry = async (req, res) => {
   }
 };
 
+
+const getAllCountry = async (req, res) => {
+  try {
+    const lang = i18n.getLocale() || 'en';
+    const page = 1;
+    const pageSize = 10;
+    const offset = (page - 1) * pageSize;
+
+    const query = `
+      SELECT 
+        c.id AS countryId,
+        ct.id AS countryTransId,
+        ct.name AS countryName, 
+        ct.lang AS translationLang
+      FROM mst_country c
+      LEFT JOIN mst_country_trans ct ON ct.country_id = c.id AND ct.lang = :lang
+      WHERE c.is_deleted = false
+      ORDER BY c.createdAt asc
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countries = await sequelize.query(query, {
+      replacements: { lang, limit: pageSize, offset },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    if (!countries || countries.length === 0) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("Country.COUNTRY_NOT_FOUND"),
+        data: "",
+        err: null
+      });
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) as totalCountries
+      FROM mst_country c
+      WHERE c.is_deleted = false
+    `;
+    const countResult = await sequelize.query(countQuery, {
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    const totalCountries = countResult[0]?.totalCountries || 0;
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("Country.COUNTRY_FETCHED"),
+      data: countries,
+      totalCountries,
+      err: null
+    });
+  } catch (error) {
+    console.error("Error in getting countries:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: null
+    });
+  }
+};
+
+
+
+
 module.exports = {
   createCountry,
   getCountryById,
+  getAllCountry,
   updateCountry,
   deleteCountry
 };

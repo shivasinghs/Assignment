@@ -24,8 +24,11 @@ const createCity = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM mst_city_trans
-        WHERE lang = :lang AND name = :name AND is_deleted = false
+        SELECT id 
+        FROM mst_city_trans
+        WHERE is_deleted = false
+        AND LOWER(lang) = LOWER(:lang)
+        AND LOWER(name) = LOWER(:name)
       `;
       const existingTranslation = await sequelize.query(query, {
         replacements: { lang: translations[i].lang, name: translations[i].name },
@@ -93,7 +96,7 @@ const getCityById = async (req, res) => {
     }
 
     const query = `
-      SELECT c.id, ct.*
+      SELECT c.id, ct.id,ct.name,ct.lang
       FROM mst_city c
       LEFT JOIN mst_city_trans ct ON ct.city_id = c.id
       WHERE c.id = :cityId
@@ -157,8 +160,12 @@ const updateCity = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM mst_city_trans
-        WHERE lang = :lang AND name = :name AND is_deleted = false AND city_id != :cityId
+        SELECT id 
+        FROM mst_city_trans
+        WHERE is_deleted = false
+        AND city_id != :cityId
+        AND LOWER(lang) = LOWER(:lang) 
+        AND LOWER(name) = LOWER(:name)
       `;
       const existingTranslation = await sequelize.query(query, {
         replacements: { lang: translations[i].lang, name: translations[i].name, cityId },
@@ -175,15 +182,6 @@ const updateCity = async (req, res) => {
       }
     }
 
-    city.updatedAt = Math.floor(Date.now() / 1000);
-    city.updatedBy = adminId;
-    await city.save();
-
-    await MstCityTrans.update(
-      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { cityId: cityId, isDeleted: false } }
-    );
-
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
@@ -195,6 +193,15 @@ const updateCity = async (req, res) => {
         createdAt: Math.floor(Date.now() / 1000),
       });
     }
+
+    city.updatedAt = Math.floor(Date.now() / 1000);
+    city.updatedBy = adminId;
+    await city.save();
+
+    await MstCityTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { cityId: cityId, isDeleted: false } }
+    );
 
     await MstCityTrans.bulkCreate(translationsData);
 
@@ -265,9 +272,72 @@ const deleteCity = async (req, res) => {
   }
 };
 
+const getAllCity = async (req, res) => {
+  try {
+    const lang = i18n.getLocale() || 'en';
+    const page = 1;
+    const pageSize = 10;
+    const offset = (page - 1) * pageSize;
+
+    const query = `
+      SELECT 
+        c.id AS cityId,
+        ct.id AS cityTransId,
+        ct.name AS cityName, 
+        ct.lang AS translationLang
+      FROM mst_city c
+      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.lang = :lang
+      WHERE c.is_deleted = false
+      ORDER BY c.createdAt asc
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const cities = await sequelize.query(query, {
+      replacements: { lang, limit: pageSize, offset },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    if (!cities || cities.length === 0) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("City.CITY_NOT_FOUND"),
+        data: "",
+        err: null
+      });
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) as totalCities
+      FROM mst_city c
+      WHERE c.is_deleted = false
+    `;
+    const countResult = await sequelize.query(countQuery, {
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    const totalCities = countResult[0]?.totalCities || 0;
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("City.CITY_FETCHED"),
+      data: cities,
+      totalCities,
+      err: null
+    });
+  } catch (error) {
+    console.error("Error in getting cities:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: null
+    });
+  }
+};
+
 module.exports = {
   createCity,
   getCityById,
+  getAllCity,
   updateCity,
-  deleteCity
+  deleteCity,
 };

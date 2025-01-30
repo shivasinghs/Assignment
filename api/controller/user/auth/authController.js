@@ -1,9 +1,8 @@
-const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE,Token_expiry } = require("../../../../config/constants");
+const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE,TOKEN_EXPIRY } = require("../../../../config/constants");
 const { User,MstCountry,MstCity } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
-// const i18n = require("../../../../config/i18n");
-const i18n = require('../../../../config/i18n.js');
+const i18n = require("../../../../config/i18n");
 const sequelize = require("../../../../config/sequelize");
 
 const SignUp = async (req, res) => {
@@ -15,14 +14,13 @@ const SignUp = async (req, res) => {
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: "",
-        err: validation.errors.all(),
+        data: validation.errors.all(),
+        err: null,
       });
     }
-
     const existingUser = await User.findOne({
-      where: { email: { [Op.iLike]: email } },
-      attributes: ["id"]
+      where: { email:  email } ,
+      attributes : ["id"]
     });
 
     if (existingUser) {
@@ -45,42 +43,43 @@ const SignUp = async (req, res) => {
       companyName,
     });
 
+
     return res.status(HTTP_STATUS_CODE.CREATED).json({
       msg: i18n.__("User.Auth.USER_CREATED"),
-      data: { id: newUser.id, name: newUser.name, email: newUser.email },
+      data: { id: newUser.id, name: newUser.name },
       err: null,
     });
   } catch (error) {
     console.error("Error in signup:", error);
-    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+    return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: error.message,
+      data:error.message,
       err: null,
     });
   }
 };
 
 const login = async (req, res) => { 
+
   try {
     const { email, password } = req.body;
 
-    const validation = new VALIDATOR(req.body, {
+    const validation = new VALIDATOR(req.body,{
       email: validationRules.User.email,
       password: validationRules.User.password
     });
-
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: "",
-        err: validation.errors.all(),
+        data: validation.errors.all(),
+        err: null,
       });
     }
 
     const user = await User.findOne({
-      where: { email: { [Op.iLike]: email } },
+       where: { email: email },
       attributes: ["id", "password"]
-    });
+     });
 
     if (!user) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -101,20 +100,20 @@ const login = async (req, res) => {
 
     const token = generateToken(
       { userId: user.id, email: user.email },
-      Token_expiry
+      TOKEN_EXPIRY
     );
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.LOGIN_SUCCESS"),
-      data: { userId: user.id, email: user.email, token },
+      data:{ userId: user.id, email: user.email, token },
       err: null,
     });
   } catch (error) {
     console.error("Error in login:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: "",
-      err: error.message,
+      data: error.message,
+      err: "",
     });
   }
 };
@@ -134,8 +133,8 @@ const updateProfile = async (req, res) => {
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_INPUT"),
-        data: "",
-        err: validation.errors.all(),
+        data: validation.errors.all(),
+        err: null,
       });
     }
 
@@ -163,7 +162,7 @@ const updateProfile = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.PROFILE_UPDATED"),
-      data: user,
+      data: {userId},
       err: null,
     });
   } catch (error) {
@@ -175,7 +174,6 @@ const updateProfile = async (req, res) => {
     });
   }
 };
-
 
 
 

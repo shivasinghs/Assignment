@@ -51,8 +51,11 @@ const createAccount = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM account_name_trans 
-        WHERE lang = :lang AND name = :name AND is_deleted = false
+        SELECT id 
+        FROM account_name_trans
+        WHERE is_deleted = false
+        AND LOWER(lang) = LOWER(:lang)
+        AND LOWER(name) = LOWER(:name)
       `;
 
       const existingTranslation = await sequelize.query(query, {
@@ -113,7 +116,7 @@ const createAccount = async (req, res) => {
 const getAccountById = async (req, res) => {
   try {
     const { accountId } = req.params;
-
+    const userId = req.user.id;
     const validation = new VALIDATOR(req.params, { accountId: validationRules.Account.accountId });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -124,16 +127,25 @@ const getAccountById = async (req, res) => {
     }
 
     const query = `
-      SELECT a.id AS account_id, a.category_id, a.subcategory_id, a.description, at.id AS translation_id, at.name AS translation_name, c.id AS category_id, s.id AS subcategory_id
+     SELECT 
+      a.id AS account_id, 
+      a.category_id, 
+      a.subcategory_id, 
+      a.description, 
+      at.id AS translation_id, 
+      at.name AS translation_name, 
+      c.id AS category_id, 
+      s.id AS subcategory_id
       FROM account a
       LEFT JOIN account_name_trans at ON at.account_id = a.id
       LEFT JOIN category c ON c.id = a.category_id
       LEFT JOIN sub_category s ON s.id = a.subcategory_id
-      WHERE a.id = :accountId AND a.is_deleted = false
+      WHERE a.id = :accountId AND a.is_deleted = false AND a.user_id = :userId
+
     `;
 
     const account = await sequelize.query(query, {
-      replacements: { accountId },
+      replacements: { accountId,userId },
       type: sequelize.QueryTypes.SELECT,
       raw: true,
     });
@@ -187,7 +199,6 @@ const updateAccount = async (req, res) => {
       });
     }
 
-    // Find the category and subcategory
     const category = await Category.findOne({
       where: { id: categoryId, isDeleted: false },
       attributes: ['id'],
@@ -216,12 +227,17 @@ const updateAccount = async (req, res) => {
     if (translations && translations.length > 0) {
       for (let i = 0; i < translations.length; i++) {
         const query = `
-          SELECT id FROM account_name_trans 
-          WHERE lang = :lang AND name = :name AND is_deleted = false AND account_id = :accountId
+           SELECT id 
+            FROM account_name_trans
+            WHERE is_deleted = false
+            AND account_id != :accountId
+            AND LOWER(lang) = LOWER(:lang) 
+            AND LOWER(name) = LOWER(:name)
+            AND a.user_id = :userID
         `;
 
         const existingTranslation = await sequelize.query(query, {
-          replacements: { lang: translations[i].lang, name: translations[i].name, accountId },
+          replacements: { lang: translations[i].lang, name: translations[i].name, accountId,userId },
           type: sequelize.QueryTypes.SELECT,
           raw: true,
         });
@@ -235,18 +251,6 @@ const updateAccount = async (req, res) => {
         }
       }
 
-      account.categoryId = categoryId;
-      account.subCategoryId = subCategoryId;
-      account.description = description;
-      account.updatedAt = Math.floor(Date.now() / 1000);
-      account.updatedBy = userId;  
-      await account.save();
-
-      await AccountNameTrans.update(
-        { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: userId },
-        { where: { accountId, isDeleted: false } }
-      );
-
       const translationsData = [];
       for (let i = 0; i < translations.length; i++) {
         translationsData.push({
@@ -258,6 +262,18 @@ const updateAccount = async (req, res) => {
           createdBy: userId,
         });
       }
+      
+      account.categoryId = categoryId;
+      account.subCategoryId = subCategoryId;
+      account.description = description;
+      account.updatedAt = Math.floor(Date.now() / 1000);
+      account.updatedBy = userId;  
+      await account.save();
+
+      await AccountNameTrans.update(
+        { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: userId },
+        { where: { accountId, isDeleted: false } }
+      );
 
       if (translationsData.length > 0) {
         await AccountNameTrans.bulkCreate(translationsData);
@@ -284,7 +300,10 @@ const deleteAccount = async (req, res) => {
   try {
     const { accountId } = req.params;
     const userId = req.user.id;
-    const account = await Account.findByPk(accountId);
+    const account = await Account.findOne({
+      where : {accountId : accountId, userId : userId, is_deleted : false},
+      attributes : ['id']
+    });
     
     if (!account) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
@@ -334,7 +353,7 @@ const deleteAccount = async (req, res) => {
 
 const getAllAccounts = async (req, res) => {
   try {
-    const lang = i18n.getLocale() || "en"; // Get locale from i18n
+    const lang = i18n.getLocale() || "en"; 
     const userId = req.user.id;
 
     const query = `
@@ -348,7 +367,7 @@ const getAllAccounts = async (req, res) => {
     `;
 
     const accounts = await sequelize.query(query, {
-      replacements: { userId, lang }, // Replace placeholders in query
+      replacements: { userId, lang }, 
       type: sequelize.QueryTypes.SELECT,
       raw: true,
     });

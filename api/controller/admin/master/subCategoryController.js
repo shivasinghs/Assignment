@@ -35,19 +35,24 @@ const createSubCategory = async (req, res) => {
       });
     }
 
-  
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM sub_category_trans 
-        WHERE lang = :lang AND name = :name AND is_deleted = false
+        SELECT id
+        FROM sub_category_trans
+        WHERE is_deleted = false
+        AND LOWER(lang) = LOWER(:lang)
+        AND LOWER(name) = LOWER(:name)
       `;
-
+    
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name },
+        replacements: { 
+          lang: translations[i].lang, 
+          name: translations[i].name 
+        },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
-
+    
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
           msg: i18n.__("SubCategory.SUBCATEGORY_TRANSLATIONS_EXISTS"),
@@ -55,7 +60,7 @@ const createSubCategory = async (req, res) => {
           err: null,
         });
       }
-    }
+    }      
 
     const newSubCategory = await SubCategory.create({
       id: uuidv4(),
@@ -109,10 +114,10 @@ const getSubCategoryById = async (req, res) => {
     }
 
     const query = `
-      SELECT sc.id, sct.*
+      SELECT sc.id, sct.id,sct.name
       FROM sub_category sc
       LEFT JOIN sub_category_trans sct ON sct.subcategory_id = sc.id
-      WHERE sc.id = :subCategoryId
+      WHERE sc.id = :subCategoryId AND is_deleted = false
     `;
 
     const subCategory = await sequelize.query(query, {
@@ -173,16 +178,24 @@ const updateSubCategory = async (req, res) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
-        SELECT id FROM sub_category_trans 
-        WHERE lang = :lang AND name = :name AND is_deleted = false AND subcategory_id != :subCategoryId
+        SELECT id 
+        FROM sub_category_trans 
+        WHERE is_deleted = false
+        AND subcategory_id != :subCategoryId
+        AND LOWER(lang) = LOWER(:lang)
+        AND LOWER(name) = LOWER(:name)
       `;
-
+    
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name, subCategoryId },
+        replacements: { 
+          lang: translations[i].lang, 
+          name: translations[i].name, 
+          subCategoryId 
+        },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
-
+    
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
           msg: i18n.__("SubCategory.SUBCATEGORY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_SUBCATEGORY"),
@@ -191,16 +204,7 @@ const updateSubCategory = async (req, res) => {
         });
       }
     }
-
-    subCategory.updatedAt = Math.floor(Date.now() / 1000);
-    subCategory.updatedBy = adminId;
-    await subCategory.save();
-
-    await SubCategoryTrans.update(
-      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { subcategoryId: subCategoryId, isDeleted: false } }
-    );
-
+    
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
@@ -212,6 +216,15 @@ const updateSubCategory = async (req, res) => {
         createdAt: Math.floor(Date.now() / 1000),
       });
     }
+   
+    subCategory.updatedAt = Math.floor(Date.now() / 1000);
+    subCategory.updatedBy = adminId;
+    await subCategory.save();
+
+    await SubCategoryTrans.update(
+      { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
+      { where: { subcategoryId: subCategoryId, isDeleted: false } }
+    );
 
     await SubCategoryTrans.bulkCreate(translationsData);
 
@@ -298,10 +311,69 @@ const deleteSubCategory = async (req, res) => {
   }
 };
 
+const getAllSubCategory = async (req, res) => {
+  try {
+    const lang = i18n.getLocale() || 'en';
+    
+    const query = `
+      SELECT sc.id,sct.id, sct.name, sct.lang
+      FROM sub_category sc
+      LEFT JOIN sub_category_trans sct 
+        ON sct.subcategory_id = sc.id 
+        AND sct.lang = :lang
+      WHERE sc.is_deleted = false 
+      GROUP BY sc.id, sct.name, sct.lang
+      ORDER BY sc.createdAt asc
+    `;
+
+    const subcategories = await sequelize.query(query, {
+      replacements: { lang },
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    if (!subcategories || subcategories.length === 0) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("SubCategory.SUBCATEGORY_NOT_FOUND"),
+        data: "",
+        err: null
+      });
+    }
+
+    const countQuery = `
+      SELECT COUNT(*) as totalSubCategories
+      FROM sub_category sc
+      WHERE sc.is_deleted = false
+    `;
+    const countResult = await sequelize.query(countQuery, {
+      type: sequelize.QueryTypes.SELECT,
+      raw: true
+    });
+
+    const totalSubCategories = countResult[0]?.totalSubCategories || 0;
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("SubCategory.SUBCATEGORY_FETCHED"),
+      data: subcategories,
+      totalSubCategories,
+      err: null
+    });
+  } catch (error) {
+    console.error("Error in getting subcategories:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      data: error.message,
+      err: null,
+    });
+  }
+};
+
+
 
 module.exports = {
   createSubCategory,
   getSubCategoryById,
+  getAllSubCategory,
   updateSubCategory,
-  deleteSubCategory,
+  deleteSubCategory
 };
