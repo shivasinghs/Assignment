@@ -2,12 +2,12 @@ const { HTTP_STATUS_CODE } = require("../../../../config/constants");
 const i18n = require("../../../../config/i18n");
 const Sequelize = require("../../../../config/sequelize");
 
-const getUsersWithFilters = async ({ city, country, search, page = 1, pageSize = 10, sortOrder = "ASC", sortBy = "createdAt" }, res) => {
+const getUsersWithFilters = async ({ city, country, search, page = 1, pageSize = 10, sortOrder = "ASC", sortBy = "created_at" }, res) => {
   try {
     const offset = (page - 1) * pageSize;
     const limit = parseInt(pageSize, 10);
 
-    let whereClause = "WHERE u.is_deleted = false";
+    let whereClause = 'WHERE u."is_deleted" = false';
 
     if (search) {
       whereClause += ` AND (u.email ILIKE '%${search}%' OR u.name ILIKE '%${search}%')`;
@@ -22,19 +22,20 @@ const getUsersWithFilters = async ({ city, country, search, page = 1, pageSize =
     }
 
     const query = `
-      SELECT 
-        u.id, u.name, u.email,
-        COUNT(a.id) AS accountCount, 
-        c.id AS cityId, co.id AS countryId,
-        u.created_at 
-      FROM user u
-      LEFT JOIN mst_city c ON u.city_id = c.id
-      LEFT JOIN mst_country co ON u.country_id = co.id
-      LEFT JOIN Account a ON u.id = a.user_id
-      ${whereClause}
-      GROUP BY u.id, c.id, co.id, u.created_at 
-      ORDER BY ${sortBy} ${sortOrder} 
-      LIMIT :limit OFFSET :offset;
+       SELECT 
+       u.id, u.name, u.email,
+       COUNT(a.id) AS accountCount, 
+       c.id AS cityId, co.id AS countryId,
+       u.created_at  
+       FROM "user" u
+       LEFT JOIN "mst_city" c ON u."city_id" = c.id
+       LEFT JOIN "mst_country" co ON u."country_id" = co.id
+       LEFT JOIN "account" a ON u.id = a.user_id
+       WHERE u."is_deleted" = false
+       GROUP BY u.id, c.id, co.id, u.created_at 
+       ORDER BY ${sortBy} ${sortOrder} 
+       LIMIT :limit OFFSET :offset;
+
     `;
 
     const users = await Sequelize.query(query, {
@@ -49,7 +50,7 @@ const getUsersWithFilters = async ({ city, country, search, page = 1, pageSize =
 
     const countQuery = `
       SELECT COUNT(*) AS totalUsers
-      FROM user u
+      FROM "user" u
       ${whereClause};
     `;
 
@@ -74,7 +75,7 @@ const getUsersWithFilters = async ({ city, country, search, page = 1, pageSize =
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: "Internal server error",
       data: error.message,
-      err: "",
+      err: error,
     });
   }
 };
