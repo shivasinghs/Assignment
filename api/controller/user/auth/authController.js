@@ -1,10 +1,10 @@
-const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE, TOKEN_EXPIRY,PATH } = require("../../../../config/constants");
+const { uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE, TOKEN_EXPIRY,PATH } = require("../../../../config/constants");
 const { User, MstCountry, MstCity } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
 const i18n = require("../../../../config/i18n");
 const sendEmail = require('../../../helper/sendEmail');
-const { createOTP, validateOTP } = require('../../../helper/OTPService');
+
 
 const SignUp = async (req, res) => {
   try {
@@ -35,6 +35,9 @@ const SignUp = async (req, res) => {
 
     const hashedPassword = await BCRYPT.hash(password, 10);
 
+    const otp = Math.floor(1000 + Math.random() * 9000); 
+    const expiresAt = Date.now() + 24 * 60 * 60 * 1000; 
+
     const newUser = await User.create({
       id: uuidv4(),
       name,
@@ -43,25 +46,25 @@ const SignUp = async (req, res) => {
       countryId,
       cityId,
       companyName,
+      otp,
+      otpExpiresAt : expiresAt,
     });
-
-    const otpRecord = await createOTP(newUser.id);
     
     const attachment = [
       {
-        filename: 'download.jpeg',
-        path: PATH.join(__dirname, '../../../../images/download.jpeg'),
-        cid: 'img1'
+        filename: 'signup.jpeg',
+        path: PATH.join(__dirname, '../../../../images/signup.jpeg'),
+        cid: 'signup'
       },
       {
         filename: 'download2.jpeg',
-        path: PATH.join(__dirname, '../../../../images/download2.jpeg'),
+        path: PATH.join(__dirname, '../../../../images/usersignup.jpeg'),
       }
     ]
 
     await sendEmail(newUser.email, 'Welcome to our platform', 'otp-template', {
       name: newUser.name,
-      otp: otpRecord.otp,
+      otp,
     }, attachment);
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
@@ -207,7 +210,7 @@ const verifyOTP = async (req, res) => {
 
     const user = await User.findOne({
       where: { id: userId },
-      attributes: ['id','otp','otpExpiresAt']
+      attributes: ['id', 'otp', 'otpExpiresAt']
     });
 
     if (!user) {
@@ -217,11 +220,18 @@ const verifyOTP = async (req, res) => {
       });
     }
 
-    const otpRecord = await validateOTP(user, otp);
-
-    if (!otpRecord) {
+    if (user.otp !== otp) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__('messages.INVALID_OTP'),
+        err: null,
+      });
+    }
+
+    const currentTime = Date.now();
+
+    if (user.otpExpiresAt < currentTime) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__('messages.OTP_EXPIRED'),
         err: null,
       });
     }
@@ -245,11 +255,12 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     
-    const validation = new VALIDATOR(req.body, {email:validationRules.User.email});
+    const validation = new VALIDATOR(req.body, { email: validationRules.User.email });
     
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -271,25 +282,25 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const otpRecord = await createOTP(user.id, 10);
-
-    const resetLink = `https://www.google.com`;
+    const otp = Math.floor(1000 + Math.random() * 9000); 
+    const expiresAt = Date.now() + 10 * 60 * 1000; 
 
     const attachment = [
       {
         filename: "download.jpeg",
         path: PATH.join(__dirname, "../../../../images/download.jpeg"),
+        cid : 'img1'
       },
     ];
 
-    await sendEmail( email, "Reset Your Password", "forgotPassword",
-      {
-        name: user.name,
-        resetLink,
-        otp: otpRecord.otp,
-      },
-      attachment
-    );
+    await sendEmail( email, "Reset Your Password", "forgotPassword", {
+      name: user.name,
+      otp,
+    }, attachment);
+
+    user.forgotPasswordOtp = otp;
+    user.forgotPasswordOtpExpiresAt = expiresAt;
+    await user.save();
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.PASSWORD_RESET_EMAIL_SENT"),
@@ -304,11 +315,12 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+
 const changePassword = async (req, res) => {
   try {
     const { userId, otp, newPassword } = req.body;
 
-    const validation = new VALIDATOR(req.body, {newPassword:validationRules.User.password});
+    const validation = new VALIDATOR(req.body, { newPassword: validationRules.User.password });
     
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -320,7 +332,7 @@ const changePassword = async (req, res) => {
 
     const user = await User.findOne({
       where: { id: userId },
-      attributes: ["id", "otp", "otpExpiresAt", "password"],
+      attributes: ["id", "forgotPasswordOtp", "forgotPasswordOtpExpiresAt", "password"],
     });
 
     if (!user) {
@@ -330,11 +342,17 @@ const changePassword = async (req, res) => {
       });
     }
 
-    const otpRecord = await validateOTP(user, otp);
-
-    if (!otpRecord) {
+    if (user.forgotPasswordOtp !== otp) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_OTP"),
+        err: null,
+      });
+    }
+
+    const currentTime = Date.now();
+    if (user.forgotPasswordOtpExpiresAt < currentTime) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.OTP_EXPIRED"),
         err: null,
       });
     }
@@ -344,8 +362,8 @@ const changePassword = async (req, res) => {
     user.password = hashedPassword;
     user.updatedAt = Math.floor(Date.now() / 1000);
     user.updatedBy = userId;
-    user.otp = null;
-    user.otpExpiresAt = null;
+    user.forgotPasswordOtp = null;
+    user.forgotPasswordOtpExpiresAt = null;
     await user.save();
 
     return res.status(HTTP_STATUS_CODE.OK).json({
@@ -360,8 +378,6 @@ const changePassword = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = {
   SignUp,

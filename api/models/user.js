@@ -98,10 +98,20 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   otpExpiresAt: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     allowNull: true,
     field: 'otp_expires_at',
   },
+  forgotPasswordOtp: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'forgot_password_otp'
+  },
+  forgotPasswordOtpExpiresAt: {
+    type: DataTypes.BIGINT,
+    allowNull: true,
+    field: 'forgot_password_otp_expires_at',
+  },  
 }, {
   tableName: 'user',
   freezeTableName: true,

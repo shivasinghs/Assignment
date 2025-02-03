@@ -16,6 +16,9 @@
 			"USER_CREATED": "Benutzer erfolgreich erstellt",
 			"LOGIN_SUCCESS": "Anmeldung erfolgreich",
 			"PROFILE_UPDATED": "Profil erfolgreich aktualisiert"
+		},
+		"AUTH": {
+			"PASSWORD_CHANGED": "USER.AUTH.PASSWORD_CHANGED"
 		}
 	},
 	"ADMIN": {
@@ -122,7 +125,8 @@
 			"OTP_VERIFIED": "User.Auth.OTP_VERIFIED",
 			"USER_NOT_VERIFIED": "User.Auth.USER_NOT_VERIFIED",
 			"PASSWORD_RESET_EMAIL_SENT": "User.Auth.PASSWORD_RESET_EMAIL_SENT",
-			"PASSWORD_CHANGED": "User.Auth.PASSWORD_CHANGED"
+			"PASSWORD_CHANGED": "User.Auth.PASSWORD_CHANGED",
+			"USER_NOT_FOUND": "User.Auth.USER_NOT_FOUND"
 		}
 	}
 }
