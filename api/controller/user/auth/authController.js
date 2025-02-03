@@ -53,6 +53,10 @@ const SignUp = async (req, res) => {
         path: PATH.join(__dirname, '../../../../images/download.jpeg'),
         cid: 'img1'
       },
+      {
+        filename: 'download2.jpeg',
+        path: PATH.join(__dirname, '../../../../images/download2.jpeg'),
+      }
     ]
 
     await sendEmail(newUser.email, 'Welcome to our platform', 'otp-template', {
@@ -241,10 +245,129 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    const validation = new VALIDATOR(req.body, {email:validationRules.User.email});
+    
+    if (validation.fails()) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_INPUT"),
+        data: validation.errors.all(),
+        err: null,
+      });
+    }
+
+    const user = await User.findOne({
+      where: { email: email },
+      attributes: ["id", "name"],
+    });
+
+    if (!user) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("User.AUTH.NOT_FOUND"),
+        err: null,
+      });
+    }
+
+    const otpRecord = await createOTP(user.id, 10);
+
+    const resetLink = `https://www.google.com`;
+
+    const attachment = [
+      {
+        filename: "download.jpeg",
+        path: PATH.join(__dirname, "../../../../images/download.jpeg"),
+      },
+    ];
+
+    await sendEmail( email, "Reset Your Password", "forgotPassword",
+      {
+        name: user.name,
+        resetLink,
+        otp: otpRecord.otp,
+      },
+      attachment
+    );
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("User.Auth.PASSWORD_RESET_EMAIL_SENT"),
+      err: null,
+    });
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      err: error.message,
+    });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const { userId, otp, newPassword } = req.body;
+
+    const validation = new VALIDATOR(req.body, {newPassword:validationRules.User.password});
+    
+    if (validation.fails()) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_INPUT"),
+        data: validation.errors.all(),
+        err: null,
+      });
+    }
+
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: ["id", "otp", "otpExpiresAt", "password"],
+    });
+
+    if (!user) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__("User.Auth.USER_NOT_FOUND"),
+        err: null,
+      });
+    }
+
+    const otpRecord = await validateOTP(user, otp);
+
+    if (!otpRecord) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__("messages.INVALID_OTP"),
+        err: null,
+      });
+    }
+
+    const hashedPassword = await BCRYPT.hash(newPassword, 10);
+    
+    user.password = hashedPassword;
+    user.updatedAt = Math.floor(Date.now() / 1000);
+    user.updatedBy = userId;
+    user.otp = null;
+    user.otpExpiresAt = null;
+    await user.save();
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__("USER.AUTH.PASSWORD_CHANGED"),
+      err: null,
+    });
+  } catch (error) {
+    console.error("Error in changePassword:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__("messages.INTERNAL_ERROR"),
+      err: error.message,
+    });
+  }
+};
+
+
 
 module.exports = {
   SignUp,
   login,
   updateProfile,
-  verifyOTP
+  verifyOTP,
+  forgotPassword,
+  changePassword
 };

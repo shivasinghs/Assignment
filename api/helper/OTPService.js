@@ -5,9 +5,9 @@ const generateOtp = () => {
   return Math.floor(1000 + Math.random() * 9000);
 };
 
-const createOTP = async (userId) => {
+const createOTP = async (userId, expiresInMinutes = 30) => {
   const otp = generateOtp();
-  const expiresAt = moment().add(1, "days").unix();
+  const expiresAt = moment().add(expiresInMinutes, "minutes").unix(); 
 
   await User.update(
     { otp, otpExpiresAt: expiresAt },

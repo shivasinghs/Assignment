@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const path = require('path');
+const {PATH} = require('../../config/constants');
 const fs = require('fs');
 const handlebars = require('handlebars');
 
@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 const readHbsFile = (templateName, data) => {
   try {
-    const filePath = path.join(__dirname, '../../', 'views', `${templateName}.hbs`);
+    const filePath = PATH.join(__dirname, '../../', 'views', `${templateName}.hbs`);
     const templateSource = fs.readFileSync(filePath, 'utf8');
     const template = handlebars.compile(templateSource);
     return template(data);
@@ -34,6 +34,7 @@ const sendEmail = async (to, subject, template, context,attachment) => {
       html,
       attachments: attachment,
     };
+
     await transporter.sendMail(mailOptions);
     console.log(`Email sent to ${to}`);
   } catch (error) {
