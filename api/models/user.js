@@ -87,6 +87,21 @@ const User = sequelize.define('User', {
     field: 'deleted_at',
     allowNull: true,
   },
+  otp: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    field: 'is_verified',
+    defaultValue: false,
+    allowNull: false,
+  },
+  otpExpiresAt: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'otp_expires_at',
+  },
 }, {
   tableName: 'user',
   freezeTableName: true,

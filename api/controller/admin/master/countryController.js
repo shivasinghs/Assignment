@@ -284,13 +284,13 @@ const getAllCountry = async (req, res) => {
     const query = `
       SELECT 
         c.id AS countryId,
-        ct.id AS countryTransId,
+        ct.id AS countryTransId ,
         ct.name AS countryName, 
-        ct.lang AS translationLang
+        ct.lang AS translationLang 
       FROM mst_country c
-      LEFT JOIN mst_country_trans ct ON ct.country_id = c.id AND ct.lang = :lang
+      LEFT JOIN mst_country_trans ct ON ct.country_id = c.id AND ct.lang = :lang AND ct.is_deleted = false
       WHERE c.is_deleted = false
-      ORDER BY c.createdAt asc
+      ORDER BY c.created_at asc
       LIMIT :limit OFFSET :offset
     `;
 
@@ -318,7 +318,7 @@ const getAllCountry = async (req, res) => {
       raw: true
     });
 
-    const totalCountries = countResult[0]?.totalCountries || 0;
+    const totalCountries = countResult[0]?.totalcountries || 0;
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("Country.COUNTRY_FETCHED"),

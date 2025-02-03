@@ -8,8 +8,8 @@ const MstCountryTrans = require("./MstCountryTrans")
 const MstCityTrans = require("./MstCityTrans")
 const CategoryTrans = require("./CategoryTrans")
 const SubCategoryTrans = require("./SubCategoryTrans")
-const Account = require('./Account');
-const AccountNameTrans = require('./AccountNameTrans')
+const Account = require("./Account")
+const AccountNameTrans = require("./AccountNameTrans")
 
 Category.hasMany(SubCategory, {
   foreignKey: "categoryId",
@@ -32,13 +32,13 @@ MstCity.belongsTo(MstCountry, {
 })
 
 MstCountry.hasMany(MstCountryTrans, {
-  foreignKey: "countryId", 
-  as: "translations", 
+  foreignKey: "countryId",
+  as: "translations"
 })
 
 MstCountryTrans.belongsTo(MstCountry, {
   foreignKey: "countryId",
-  as: "country", 
+  as: "country"
 })
 
 Category.hasMany(CategoryTrans, {
@@ -51,7 +51,6 @@ CategoryTrans.belongsTo(Category, {
   as: "category"
 })
 
-
 SubCategory.hasMany(SubCategoryTrans, {
   foreignKey: "subcategoryId",
   as: "translations"
@@ -61,7 +60,6 @@ SubCategoryTrans.belongsTo(SubCategory, {
   foreignKey: "subcategoryId",
   as: "subCategory"
 })
-
 
 MstCity.hasMany(MstCityTrans, {
   foreignKey: "cityId",
@@ -73,32 +71,30 @@ MstCityTrans.belongsTo(MstCity, {
   as: "city"
 })
 
-
 User.hasMany(Account, {
-  foreignKey: 'userId',
-  as: 'accounts',
-});
+  foreignKey: "userId",
+  as: "accounts"
+})
 
 User.belongsTo(MstCountry, {
-  foreignKey: 'countryId', 
-  as: 'country', 
-});
+  foreignKey: "countryId",
+  as: "country"
+})
 
 User.belongsTo(MstCity, {
-  foreignKey: 'cityId', 
-  as: 'city', 
-});
+  foreignKey: "cityId",
+  as: "city"
+})
 
 MstCountry.hasMany(User, {
-  foreignKey: 'countryId', 
-  as: 'users', 
-});
+  foreignKey: "countryId",
+  as: "users"
+})
 
 MstCity.hasMany(User, {
-  foreignKey: 'cityId', 
-  as: 'users', 
-});
-
+  foreignKey: "cityId",
+  as: "users"
+})
 
 
 module.exports = {
@@ -113,5 +109,5 @@ module.exports = {
   CategoryTrans,
   SubCategoryTrans,
   Account,
-  AccountNameTrans
+  AccountNameTrans,
 }

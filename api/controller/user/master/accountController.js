@@ -54,7 +54,6 @@ const createAccount = async (req, res) => {
         SELECT id 
         FROM account_name_trans
         WHERE is_deleted = false
-        AND LOWER(lang) = LOWER(:lang)
         AND LOWER(name) = LOWER(:name)
       `;
 
@@ -231,7 +230,6 @@ const updateAccount = async (req, res) => {
             FROM account_name_trans
             WHERE is_deleted = false
             AND account_id != :accountId
-            AND LOWER(lang) = LOWER(:lang) 
             AND LOWER(name) = LOWER(:name)
             AND a.user_id = :userID
         `;

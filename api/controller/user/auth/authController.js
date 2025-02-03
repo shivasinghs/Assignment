@@ -1,9 +1,10 @@
-const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE,TOKEN_EXPIRY } = require("../../../../config/constants");
-const { User,MstCountry,MstCity } = require("../../../models/index");
+const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE, TOKEN_EXPIRY } = require("../../../../config/constants");
+const { User, MstCountry, MstCity } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
 const i18n = require("../../../../config/i18n");
-const sequelize = require("../../../../config/sequelize");
+const sendEmail = require('../../../helper/sendEmail');
+const { createOTP, validateOTP } = require('../../../helper/OTPService');
 
 const SignUp = async (req, res) => {
   try {
@@ -18,9 +19,10 @@ const SignUp = async (req, res) => {
         err: null,
       });
     }
+
     const existingUser = await User.findOne({
-      where: { email:  email } ,
-      attributes : ["id"]
+      where: { email: email },
+      attributes: ["id"]
     });
 
     if (existingUser) {
@@ -43,6 +45,12 @@ const SignUp = async (req, res) => {
       companyName,
     });
 
+    const otpRecord = await createOTP(newUser.id);
+
+    await sendEmail(newUser.email, 'Welcome to our platform', 'otp-template', {
+      name: newUser.name,
+      otp: otpRecord.otp,
+    });
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
       msg: i18n.__("User.Auth.USER_CREATED"),
@@ -53,18 +61,17 @@ const SignUp = async (req, res) => {
     console.error("Error in signup:", error);
     return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data:error.message,
+      data: error.message,
       err: null,
     });
   }
 };
 
 const login = async (req, res) => { 
-
   try {
     const { email, password } = req.body;
 
-    const validation = new VALIDATOR(req.body,{
+    const validation = new VALIDATOR(req.body, {
       email: validationRules.User.email,
       password: validationRules.User.password
     });
@@ -77,13 +84,21 @@ const login = async (req, res) => {
     }
 
     const user = await User.findOne({
-       where: { email: email },
-      attributes: ["id", "password"]
-     });
+      where: { email: email },
+      attributes: ["id", "password", "isVerified"]
+    });
 
     if (!user) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         msg: i18n.__("messages.INVALID_CREDENTIALS"),
+        data: "",
+        err: null,
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
+        msg: i18n.__("User.Auth.USER_NOT_VERIFIED"),
         data: "",
         err: null,
       });
@@ -105,7 +120,7 @@ const login = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.LOGIN_SUCCESS"),
-      data:{ userId: user.id, email: user.email, token },
+      data: { userId: user.id, email: user.email, token },
       err: null,
     });
   } catch (error) {
@@ -138,7 +153,7 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ where: { id: userId },attributes: ['id'] });
+    const user = await User.findOne({ where: { id: userId }, attributes: ['id'] });
     
     if (!user) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
@@ -151,18 +166,17 @@ const updateProfile = async (req, res) => {
     const updatedData = {
       name: name,
       countryId: countryId,
-      cityId: cityId, 
+      cityId: cityId,
       companyName: companyName
     };
-     
+
     user.updatedAt = Math.floor(Date.now() / 1000);
     user.updatedBy = userId;
     await user.update(updatedData);
 
-
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("User.Auth.PROFILE_UPDATED"),
-      data: {userId},
+      data: { userId },
       err: null,
     });
   } catch (error) {
@@ -175,11 +189,54 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const verifyOTP = async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
 
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: ['id','otp','otpExpiresAt']
+    });
+
+    if (!user) {
+      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+        msg: i18n.__('messages.USER_NOT_FOUND'),
+        err: null,
+      });
+    }
+
+    const otpRecord = await validateOTP(user, otp);
+
+    if (!otpRecord) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+        msg: i18n.__('messages.INVALID_OTP'),
+        err: null,
+      });
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiresAt = null;
+    await user.save();
+
+    return res.status(HTTP_STATUS_CODE.OK).json({
+      msg: i18n.__('User.Auth.OTP_VERIFIED'),
+      data: { userId },
+      err: null,
+    });
+  } catch (error) {
+    console.error("Error in OTP verification:", error);
+    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      msg: i18n.__('messages.INTERNAL_ERROR'),
+      err: error.message,
+    });
+  }
+};
 
 
 module.exports = {
   SignUp,
   login,
   updateProfile,
+  verifyOTP
 };

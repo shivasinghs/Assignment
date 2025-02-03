@@ -288,7 +288,7 @@ const getAllCity = async (req, res) => {
       FROM mst_city c
       LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.lang = :lang
       WHERE c.is_deleted = false
-      ORDER BY c.createdAt asc
+      ORDER BY c.created_at asc
       LIMIT :limit OFFSET :offset
     `;
 
@@ -316,7 +316,7 @@ const getAllCity = async (req, res) => {
       raw: true
     });
 
-    const totalCities = countResult[0]?.totalCities || 0;
+    const totalCities = countResult[0]?.totalcities || 0;
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       msg: i18n.__("City.CITY_FETCHED"),

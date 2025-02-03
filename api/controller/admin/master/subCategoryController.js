@@ -1,4 +1,4 @@
-const { SubCategory, SubCategoryTrans, Category } = require("../../../models/index");
+const { SubCategory, SubCategoryTrans, Category,Account } = require("../../../models/index");
 const { HTTP_STATUS_CODE, VALIDATOR,uuidv4 } = require("../../../../config/constants");
 const i18n = require("../../../../config/i18n");
 const sequelize = require("../../../../config/sequelize");
@@ -274,9 +274,8 @@ const deleteSubCategory = async (req, res) => {
       where: {
         subCategoryId: subCategoryId,
         isDeleted: false,
-      },
-      attributes: ['id'],
-    });
+      }
+    });    
 
     if (accountsWithSubCategory > 0) {
       return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
@@ -306,7 +305,7 @@ const deleteSubCategory = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       msg: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
-      err: "",
+      err: error,
     });
   }
 };
