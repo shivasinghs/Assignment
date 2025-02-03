@@ -24,7 +24,7 @@ const readHbsFile = (templateName, data) => {
   }
 };
 
-const sendEmail = async (to, subject, template, context) => {
+const sendEmail = async (to, subject, template, context,attachment) => {
   const html = readHbsFile(template, context);
   try {
     const mailOptions = {
@@ -32,6 +32,7 @@ const sendEmail = async (to, subject, template, context) => {
       to,
       subject,
       html,
+      attachments: attachment,
     };
     await transporter.sendMail(mailOptions);
     console.log(`Email sent to ${to}`);

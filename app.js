@@ -7,6 +7,7 @@ try {
   const route = require('./config/route');
   const bootstrap = require('./config/bootstrap')
 
+
   const app = express();
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -23,6 +24,8 @@ bootstrap()
 // .catch(err => {
 //   console.error( err);
 // });
+
+
 
   app.get("/", (req, res) => {
     res.send("Hello from the backend!");

@@ -1,4 +1,4 @@
-const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE, TOKEN_EXPIRY } = require("../../../../config/constants");
+const { JWT, uuidv4, VALIDATOR, BCRYPT, Op, HTTP_STATUS_CODE, TOKEN_EXPIRY,PATH } = require("../../../../config/constants");
 const { User, MstCountry, MstCity } = require("../../../models/index");
 const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
@@ -46,11 +46,19 @@ const SignUp = async (req, res) => {
     });
 
     const otpRecord = await createOTP(newUser.id);
+    
+    const attachment = [
+      {
+        filename: 'download.jpeg',
+        path: PATH.join(__dirname, '../../../../images/download.jpeg'),
+        cid: 'img1'
+      },
+    ]
 
     await sendEmail(newUser.email, 'Welcome to our platform', 'otp-template', {
       name: newUser.name,
       otp: otpRecord.otp,
-    });
+    }, attachment);
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
       msg: i18n.__("User.Auth.USER_CREATED"),

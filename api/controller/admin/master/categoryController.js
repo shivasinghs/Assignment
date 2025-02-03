@@ -1,9 +1,5 @@
 const { Category, CategoryTrans, Account } = require("../../../models/index")
-const {
-  HTTP_STATUS_CODE,
-  VALIDATOR,
-  uuidv4
-} = require("../../../../config/constants")
+const {HTTP_STATUS_CODE, VALIDATOR, uuidv4} = require("../../../../config/constants")
 const i18n = require("../../../../config/i18n")
 const { validationRules } = require("../../../../config/validationRules")
 const sequelize = require("../../../../config/sequelize")
@@ -98,6 +94,7 @@ const getCategoryById = async (req, res) => {
         err: validation.errors.all()
       })
     }
+    
 
     const query = `
       SELECT c.id AS categoryId, ct.id AS categorytransId ,ct.name
@@ -114,14 +111,14 @@ const getCategoryById = async (req, res) => {
 
     if (!category || category.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_NOT_FOUND"),
+        msg: i18n.__("CATEGORY.NOT_FOUND"),
         data: "",
         err: null
       })
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Category.CATEGORY_FETCHED"),
+      msg: i18n.__("CATEGORY.FETCHED"),
       data: category,
       err: null
     })
@@ -168,13 +165,11 @@ const updateCategory = async (req, res) => {
       FROM category_trans
       WHERE is_deleted = false
       AND category_id != :categoryId
-      AND LOWER(lang) = LOWER(:lang)
       AND LOWER(name) = LOWER(:name)
   `
 
       const existingTranslation = await sequelize.query(query, {
         replacements: {
-          lang: translations[i].lang,
           name: translations[i].name,
           categoryId
         },
@@ -221,7 +216,7 @@ const updateCategory = async (req, res) => {
     await CategoryTrans.bulkCreate(translationsData)
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Category.CATEGORY_UPDATED"),
+      msg: i18n.__("CATEGORY.UPDATED"),
       data: categoryId,
       err: null
     })
@@ -419,7 +414,6 @@ LEFT JOIN sub_category_trans sct
   AND sct.lang = :lang
 WHERE c.is_deleted = false
 GROUP BY c.id, ct.id;
-
 `
 
     const categoriesWithSubcategories = await sequelize.query(query, {

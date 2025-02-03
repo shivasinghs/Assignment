@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const VALIDATOR = require('validatorjs');
 const BCRYPT = require('bcryptjs');
 const { Op } = require('sequelize');
+const PATH = require('path')
 
 const HTTP_STATUS_CODE = {
     OK: 200,
@@ -25,5 +26,6 @@ module.exports = {
     BCRYPT,
     Op,
     HTTP_STATUS_CODE,
-    TOKEN_EXPIRY
+    TOKEN_EXPIRY,
+    PATH
 };
