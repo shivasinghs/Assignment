@@ -57,7 +57,7 @@ const SignUp = async (req, res) => {
         cid: 'signup'
       },
       {
-        filename: 'download2.jpeg',
+        filename: 'usersignup.jpeg',
         path: PATH.join(__dirname, '../../../../images/usersignup.jpeg'),
       }
     ]
