@@ -192,7 +192,8 @@ const updateProfile = async (req, res) => {
         user.name === name &&
         user.countryId === countryId &&
         user.cityId === cityId &&
-        user.companyName === companyName
+        user.companyName === companyName &&
+        !image
       ) {
         return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
           status: HTTP_STATUS_CODE.BAD_REQUEST,
