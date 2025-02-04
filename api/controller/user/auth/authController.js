@@ -156,7 +156,6 @@ const updateProfile = async (req, res) => {
     const userId = req.user.id;
     const image = req.file;
 
-    await sequelize.transaction(async (transaction) => {
       const validation = new VALIDATOR(req.body, {
         name: validationRules.User.name,
         countryId: validationRules.User.countryId,
@@ -176,7 +175,6 @@ const updateProfile = async (req, res) => {
       const user = await User.findOne({
         where: { id: userId },
         attributes: ["id", "name", "countryId", "cityId", "companyName", "profileImage"],
-        transaction,
       });
 
       if (!user) {
@@ -219,7 +217,6 @@ const updateProfile = async (req, res) => {
           updatedAt: Math.floor(Date.now() / 1000),
           updatedBy: userId,
         },
-        { transaction }
       );
 
       return res.status(HTTP_STATUS_CODE.OK).json({
@@ -228,7 +225,6 @@ const updateProfile = async (req, res) => {
         data: { userId },
         err: null,
       });
-    });
   } catch (error) {
     console.error("Error in updating profile:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
@@ -237,8 +233,7 @@ const updateProfile = async (req, res) => {
       data: null,
       err: error.message,
     });
-  }
-};
+  } };
 
 
 const verifyOTP = async (req, res) => {

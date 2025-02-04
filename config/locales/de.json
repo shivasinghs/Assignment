@@ -44,7 +44,8 @@
 		"LISTED": "Kategorien erfolgreich aufgelistet",
 		"TRANSLATIONS_EXISTS": "Kategorieübersetzungen existieren bereits",
 		"FETCHED": "Kategorien erfolgreich abgerufen",
-		"ASSIGNED_TO_ACCOUNT": "Kategorie dem Konto zugewiesen"
+		"ASSIGNED_TO_ACCOUNT": "Kategorie dem Konto zugewiesen",
+		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "CATEGORY.CATEGORY_WITH_SUBCATEGORIES_FETCHED"
 	},
 	"SUBCATEGORY": {
 		"CREATED": "Unterkategorie erfolgreich erstellt",
@@ -86,7 +87,9 @@
 		"NOT_FOUND": "Konto nicht gefunden",
 		"FETCHED": "Konten erfolgreich abgerufen",
 		"UPDATED": "Konto erfolgreich aktualisiert",
-		"DELETED": "Konto erfolgreich gelöscht"
+		"DELETED": "Konto erfolgreich gelöscht",
+		"TRANSLATION_EXISTS": "ACCOUNT.TRANSLATION_EXISTS",
+		"TRANSLATIONS_EXISTS": "ACCOUNT.TRANSLATIONS_EXISTS"
 	},
 	"messages": {
 		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
@@ -105,7 +108,8 @@
 	},
 	"SubCategory": {
 		"SUBCATEGORY_CREATED": "SubCategory.SUBCATEGORY_CREATED",
-		"SUBCATEGORY_DELETED": "SubCategory.SUBCATEGORY_DELETED"
+		"SUBCATEGORY_DELETED": "SubCategory.SUBCATEGORY_DELETED",
+		"SUBCATEGORY_FETCHED": "SubCategory.SUBCATEGORY_FETCHED"
 	},
 	"Admin": {
 		"Auth": {
@@ -113,7 +117,8 @@
 		}
 	},
 	"Country": {
-		"COUNTRY_FETCHED": "Country.COUNTRY_FETCHED"
+		"COUNTRY_FETCHED": "Country.COUNTRY_FETCHED",
+		"COUNTRY_TRANSLATIONS_EXISTS": "Country.COUNTRY_TRANSLATIONS_EXISTS"
 	},
 	"City": {
 		"CITY_FETCHED": "City.CITY_FETCHED",
@@ -132,5 +137,6 @@
 			"USER_NOT_FOUND": "User.Auth.USER_NOT_FOUND",
 			"PROFILE_UPDATED": "User.Auth.PROFILE_UPDATED"
 		}
-	}
+	},
+	"CITYFETCHED": "CITYFETCHED"
 }

@@ -13,31 +13,34 @@ const createCategory = async (req, res) => {
     })
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all()
       })
     }
 
+   await sequelize.transaction(async (transaction) => {
     for (let i = 0; i < translations.length; i++) {
       const query = `
       SELECT id
       FROM category_trans
       WHERE is_deleted = false
-      AND LOWER(name) = LOWER(:name)
-    `
+      AND LOWER(name) = LOWER(:name)`;
 
       const existingTranslation = await sequelize.query(query, {
         replacements: {
           name: translations[i].name
         },
         type: sequelize.QueryTypes.SELECT,
-        raw: true
+        raw: true,
+        transaction: transaction ,
       })
 
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-          msg: i18n.__("Category.CATEGORY_TRANSLATIONS_EXISTS"),
+          status: HTTP_STATUS_CODE.CONFLICT,
+          message: i18n.__("CATEGORY.TRANSLATIONS_EXISTS"),
           data: "",
           err: null
         })
@@ -49,7 +52,7 @@ const createCategory = async (req, res) => {
       isActive: true,
       createdAt: Math.floor(Date.now() / 1000),
       createdBy: adminId
-    })
+    },{ transaction : transaction })
 
     const translationsData = []
     for (let i = 0; i < translations.length; i++) {
@@ -63,17 +66,20 @@ const createCategory = async (req, res) => {
       })
     }
 
-    await CategoryTrans.bulkCreate(translationsData)
+    await CategoryTrans.bulkCreate(translationsData,{ transaction: transaction  })
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
-      msg: i18n.__("Category.CATEGORY_CREATED"),
+      status: HTTP_STATUS_CODE.CREATED,
+      message: i18n.__("CATEGORY.CREATED"),
       data: { categoryId: newCategory.id },
       err: null
     })
+  });
   } catch (error) {
     console.error("Error in creating category:", error)
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: "",
       err: error.message
     })
@@ -89,7 +95,8 @@ const getCategoryById = async (req, res) => {
     })
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status : HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all()
       })
@@ -118,14 +125,16 @@ const getCategoryById = async (req, res) => {
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("CATEGORY.FETCHED"),
+      status : HTTP_STATUS_CODE.OK,
+      message: i18n.__("CATEGORY.FETCHED"),
       data: category,
       err: null
     })
   } catch (error) {
     console.error("Error in getting category:", error)
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status : HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: error
     })
@@ -134,179 +143,198 @@ const getCategoryById = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const { categoryId, translations } = req.body
-    const adminId = req.admin.id
+    const { categoryId, translations } = req.body;
+    const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.body, validationRules.Category)
+    const validation = new VALIDATOR(req.body, validationRules.Category);
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
-        err: validation.errors.all()
-      })
+        err: validation.errors.all(),
+      });
     }
 
-    const category = await Category.findOne({
-      where: { id: categoryId, isDeleted: false },
-      attributes: ["id"]
-    })
+    await sequelize.transaction(async (transaction) => {
+      const category = await Category.findOne({
+        where: { id: categoryId, isDeleted: false },
+        attributes: ["id"],
+        transaction,
+      });
 
-    if (!category) {
-      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_NOT_FOUND"),
-        data: "",
-        err: null
-      })
-    }
-
-    for (let i = 0; i < translations.length; i++) {
-      const query = `
-      SELECT id
-      FROM category_trans
-      WHERE is_deleted = false
-      AND category_id != :categoryId
-      AND LOWER(name) = LOWER(:name)
-  `
-
-      const existingTranslation = await sequelize.query(query, {
-        replacements: {
-          name: translations[i].name,
-          categoryId
-        },
-        type: sequelize.QueryTypes.SELECT,
-        raw: true
-      })
-
-      if (existingTranslation.length > 0) {
-        return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-          msg: i18n.__(
-            "Category.CATEGORY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CATEGORY"
-          ),
+      if (!category) {
+        throw {
+          status: HTTP_STATUS_CODE.NOT_FOUND,
+          message: i18n.__("CATEGORY.NOT_FOUND"),
           data: "",
-          err: null
-        })
+          err: null,
+        };
       }
-    }
 
-    const translationsData = []
-    for (let i = 0; i < translations.length; i++) {
-      translationsData.push({
-        id: uuidv4(),
-        name: translations[i].name,
-        lang: translations[i].lang,
-        categoryId: categoryId,
-        createdBy: adminId,
-        createdAt: Math.floor(Date.now() / 1000)
-      })
-    }
+      for (let i = 0; i < translations.length; i++) {
+        const query = `
+          SELECT id
+          FROM category_trans
+          WHERE is_deleted = false
+          AND category_id != :categoryId
+          AND LOWER(name) = LOWER(:name)
+        `;
 
-    category.updatedAt = Math.floor(Date.now() / 1000)
-    category.updatedBy = adminId
-    await category.save()
+        const existingTranslation = await sequelize.query(query, {
+          replacements: {
+            name: translations[i].name,
+            categoryId,
+          },
+          type: sequelize.QueryTypes.SELECT,
+          raw: true,
+          transaction: transaction ,
+        });
 
-    await CategoryTrans.update(
-      {
-        isDeleted: true,
-        deletedAt: Math.floor(Date.now() / 1000),
-        deletedBy: adminId
-      },
-      { where: { categoryId: categoryId, isDeleted: false } }
-    )
+        if (existingTranslation.length > 0) {
+          throw {
+            status: HTTP_STATUS_CODE.CONFLICT,
+            message: i18n.__(
+              "CATEGORY.TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CATEGORY"
+            ),
+            data: "",
+            err: null,
+          };
+        }
+      }
 
-    await CategoryTrans.bulkCreate(translationsData)
+      const translationsData = [];
+      for (let i = 0; i < translations.length; i++) {
+        translationsData.push({
+          id: uuidv4(),
+          name: translations[i].name,
+          lang: translations[i].lang,
+          categoryId: categoryId,
+          createdBy: adminId,
+          createdAt: Math.floor(Date.now() / 1000),
+        });
+      }
 
-    return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("CATEGORY.UPDATED"),
-      data: categoryId,
-      err: null
-    })
+      category.updatedAt = Math.floor(Date.now() / 1000);
+      category.updatedBy = adminId;
+      await category.save({ transaction: transaction  });
+
+      await CategoryTrans.update(
+        {
+          isDeleted: true,
+          deletedAt: Math.floor(Date.now() / 1000),
+          deletedBy: adminId,
+        },
+        { where: { categoryId: categoryId, isDeleted: false }, transaction : transaction }
+      );
+
+      await CategoryTrans.bulkCreate(translationsData, { transaction : transaction });
+
+      return res.status(HTTP_STATUS_CODE.OK).json({
+        status: HTTP_STATUS_CODE.OK,
+        message: i18n.__("CATEGORY.UPDATED"),
+        data: categoryId,
+        err: null,
+      });
+    });
   } catch (error) {
-    console.error("Error in updating category:", error)
-    return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: error.message,
-      err: ""
-    })
+    console.error("Error in updating category:", error);
+    return res.status(error.status || HTTP_STATUS_CODE.SERVER_ERROR).json({
+      status: error.status || HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
+      data: "",
+      err: error.message,
+    });
   }
-}
+};
 
 const deleteCategory = async (req, res) => {
   try {
-    const { categoryId } = req.params
-    const adminId = req.admin.id
+    const { categoryId } = req.params;
+    const adminId = req.admin.id;
 
     const validation = new VALIDATOR(req.params, {
-      categoryId: validationRules.Category.categoryId
-    })
+      categoryId: validationRules.Category.categoryId,
+    });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
-        err: validation.errors.all()
-      })
+        err: validation.errors.all(),
+      });
     }
 
-    const category = await Category.findOne({
-      where: { id: categoryId, isDeleted: false },
-      attributes: ["id"]
-    })
+    
+      const category = await Category.findOne({
+        where: { id: categoryId, isDeleted: false },
+        attributes: ["id"],
+        transaction: transaction,
+      });
 
-    if (!category) {
-      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_NOT_FOUND"),
-        data: "",
-        err: null
-      })
-    }
+      if (!category) {
+        return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+          status: HTTP_STATUS_CODE.NOT_FOUND,
+          message: i18n.__("CATEGORY.NOT_FOUND"),
+          data: "",
+          err: null,
+        });
+      }
 
-    const accountsWithCategory = await Account.count({
-      where: {
-        categoryId: categoryId,
-        isDeleted: false
-      },
-      attributes: ["id"]
-    })
+      const accountsWithCategory = await Account.count({
+        where: {
+          categoryId: categoryId,
+          isDeleted: false,
+        },
+        attributes: ["id"],
+      });
 
-    if (accountsWithCategory > 0) {
-      return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
-        msg: i18n.__("Category.CATEGORY_ASSIGNED_TO_ACCOUNT"),
-        data: "",
-        err: null
-      })
-    }
+      if (accountsWithCategory > 0) {
+        return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
+          status: HTTP_STATUS_CODE.FORBIDDEN,
+          message: i18n.__("CATEGORY.ASSIGNED_TO_ACCOUNT"),
+          data: "",
+          err: null,
+        });
+      }
+      
+      await sequelize.transaction(async (transaction) => {
 
-    await CategoryTrans.update(
-      {
-        isDeleted: true,
-        deletedAt: Math.floor(Date.now() / 1000),
-        deletedBy: adminId
-      },
-      { where: { categoryId: categoryId, isDeleted: false } }
-    )
+      await CategoryTrans.update(
+        {
+          isDeleted: true,
+          deletedAt: Math.floor(Date.now() / 1000),
+          deletedBy: adminId,
+        },
+        { where: { categoryId: categoryId, isDeleted: false }, transaction: transaction }
+      );
 
-    await Category.update(
-      {
-        isDeleted: true,
-        deletedAt: Math.floor(Date.now() / 1000),
-        deletedBy: adminId
-      },
-      { where: { id: categoryId, isDeleted: false } }
-    )
+      await Category.update(
+        {
+          isDeleted: true,
+          deletedAt: Math.floor(Date.now() / 1000),
+          deletedBy: adminId,
+        },
+        { where: { id: categoryId, isDeleted: false }, transaction: transaction }
+      );
 
-    return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Category.CATEGORY_DELETED"),
-      data: category,
-      err: null
-    })
+      return res.status(HTTP_STATUS_CODE.OK).json({
+        status: HTTP_STATUS_CODE.OK,
+        message: i18n.__("CATEGORY.DELETED"),
+        data: category,
+        err: null,
+      });
+    });
   } catch (error) {
-    console.error("Error in deleting category:", error)
+    console.error("Error in deleting category:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
-      err: ""
-    })
+      err: "",
+    });
   }
-}
+};
 
 const getAllCategories = async (req, res) => {
   try {
@@ -340,7 +368,8 @@ const getAllCategories = async (req, res) => {
 
     if (categories.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORIES_NOT_FOUND"),
+        status : HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CATEGORY.NOT_FOUND"),
         data: "",
         err: null
       })
@@ -360,6 +389,7 @@ const getAllCategories = async (req, res) => {
     const totalCategories = Number(countResult[0]?.totalcategories) || 0
 
     return res.status(HTTP_STATUS_CODE.OK).json({
+      status : HTTP_STATUS_CODE.OK,
       msg: i18n.__("Category.CATEGORIES_FETCHED"),
       data: categories,
       total: totalCategories,
@@ -368,7 +398,8 @@ const getAllCategories = async (req, res) => {
   } catch (error) {
     console.error("Error in getting all categories:", error)
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status : HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null
     })
@@ -383,38 +414,37 @@ const listCategoriesWithSubcategories = async (req, res) => {
     const offset = (page - 1) * pageSize
 
     const query = `
-SELECT
-  c.id AS categoryId,
-  ct.id AS categoryTransId,
-  ct.name AS categoryName,
-  ct.lang AS translationLang,
-  CASE 
-    WHEN COUNT(sc.id) > 0 THEN 
-      JSONB_AGG(
-        JSONB_BUILD_OBJECT(
-          'subCategoryId', sc.id,
-          'subCategoryName', sct.name,
-          'subCategoryTransId', sct.id,
-          'subCategoryTransLang', sct.lang
-        )
-      )
-    ELSE '[]'::jsonb
-  END AS subcategories_agg
-FROM category c
-LEFT JOIN category_trans ct 
-  ON c.id = ct.category_id 
-  AND ct.lang = :lang 
-  AND ct.is_deleted = false
-LEFT JOIN sub_category sc 
-  ON c.id = sc.category_id 
-  AND sc.is_deleted = false
-LEFT JOIN sub_category_trans sct 
-  ON sc.id = sct.subcategory_id 
-  AND sct.is_deleted = false
-  AND sct.lang = :lang
-WHERE c.is_deleted = false
-GROUP BY c.id, ct.id;
-`
+    SELECT
+      c.id AS categoryId,
+      ct.id AS categoryTransId,
+      ct.name AS categoryName,
+      ct.lang AS translationLang,
+      CASE 
+        WHEN COUNT(sc.id) > 0 THEN 
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'subCategoryId', sc.id,
+              'subCategoryName', sct.name,
+              'subCategoryTransId', sct.id,
+              'subCategoryTransLang', sct.lang
+            )
+          )
+        ELSE '[]'::jsonb
+              END AS subcategories_agg
+            FROM category c
+            LEFT JOIN category_trans ct 
+              ON c.id = ct.category_id 
+              AND ct.lang = :lang 
+              AND ct.is_deleted = false
+            LEFT JOIN sub_category sc 
+              ON c.id = sc.category_id 
+              AND sc.is_deleted = false
+            LEFT JOIN sub_category_trans sct 
+              ON sc.id = sct.subcategory_id 
+              AND sct.is_deleted = false
+              AND sct.lang = :lang
+            WHERE c.is_deleted = false
+            GROUP BY c.id, ct.id;`
 
     const categoriesWithSubcategories = await sequelize.query(query, {
       replacements: { lang, limit: pageSize, offset },
@@ -424,7 +454,8 @@ GROUP BY c.id, ct.id;
 
     if (categoriesWithSubcategories.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_WITH_SUBCATEGORIES_NOT_FOUND"),
+        status : HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CATEGORY.CATEGORY_WITH_SUBCATEGORIES_NOT_FOUND"),
         data: "",
         err: null
       })
@@ -452,7 +483,8 @@ GROUP BY c.id, ct.id;
     const totalCategories = countResult[0]?.totalcategories
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Category.CATEGORY_WITH_SUBCATEGORIES_FETCHED"),
+      status : HTTP_STATUS_CODE.OK,
+      message: i18n.__("CATEGORY.CATEGORY_WITH_SUBCATEGORIES_FETCHED"),
       data: categoriesWithSubcategories,
       total: totalCategories,
       err: null
@@ -460,7 +492,8 @@ GROUP BY c.id, ct.id;
   } catch (error) {
     console.error("Error in getting categories with subcategories:", error)
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status : HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: error
     })

@@ -44,7 +44,8 @@
 		"LISTED": "Categories successfully listed",
 		"TRANSLATIONS_EXISTS": "Category translations already exist",
 		"FETCHED": "Categories successfully fetched",
-		"ASSIGNED_TO_ACCOUNT": "Category assigned to account"
+		"ASSIGNED_TO_ACCOUNT": "Category assigned to account",
+		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "CATEGORY.CATEGORY_WITH_SUBCATEGORIES_FETCHED"
 	},
 	"SUBCATEGORY": {
 		"CREATED": "Subcategory successfully created",
@@ -86,7 +87,9 @@
 		"NOT_FOUND": "Account not found",
 		"FETCHED": "Accounts successfully fetched",
 		"UPDATED": "Account successfully updated",
-		"DELETED": "Account successfully deleted"
+		"DELETED": "Account successfully deleted",
+		"TRANSLATION_EXISTS": "ACCOUNT.TRANSLATION_EXISTS",
+		"TRANSLATIONS_EXISTS": "ACCOUNT.TRANSLATIONS_EXISTS"
 	},
 	"messages": {
 		"INVALID_TOKEN": "messages.INVALID_TOKEN",
@@ -110,10 +113,12 @@
 	},
 	"SubCategory": {
 		"SUBCATEGORY_CREATED": "SubCategory.SUBCATEGORY_CREATED",
-		"SUBCATEGORY_DELETED": "SubCategory.SUBCATEGORY_DELETED"
+		"SUBCATEGORY_DELETED": "SubCategory.SUBCATEGORY_DELETED",
+		"SUBCATEGORY_FETCHED": "SubCategory.SUBCATEGORY_FETCHED"
 	},
 	"Country": {
-		"COUNTRY_FETCHED": "Country.COUNTRY_FETCHED"
+		"COUNTRY_FETCHED": "Country.COUNTRY_FETCHED",
+		"COUNTRY_TRANSLATIONS_EXISTS": "Country.COUNTRY_TRANSLATIONS_EXISTS"
 	},
 	"City": {
 		"CITY_FETCHED": "City.CITY_FETCHED",
@@ -132,5 +137,6 @@
 			"USER_NOT_FOUND": "User.Auth.USER_NOT_FOUND",
 			"PROFILE_UPDATED": "User.Auth.PROFILE_UPDATED"
 		}
-	}
+	},
+	"CITYFETCHED": "CITYFETCHED"
 }

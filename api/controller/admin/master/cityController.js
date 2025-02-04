@@ -5,6 +5,7 @@ const { validationRules } = require("../../../../config/validationRules");
 const sequelize = require("../../../../config/sequelize");
 
 const createCity = async (req, res) => {
+
   try {
     const { countryId, translations } = req.body;
     const adminId = req.admin.id;
@@ -16,29 +17,31 @@ const createCity = async (req, res) => {
      });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: validation.errors.all(),
         err: null,
       });
     }
+    await sequelize.transaction(async (transaction) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
         SELECT id 
         FROM mst_city_trans
         WHERE is_deleted = false
-        AND LOWER(lang) = LOWER(:lang)
         AND LOWER(name) = LOWER(:name)
       `;
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name },
+        replacements: {  name: translations[i].name },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
 
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-          msg: i18n.__("City.CITY_TRANSLATIONS_EXISTS"),
+          status: HTTP_STATUS_CODE.CONFLICT,
+          message: i18n.__("CITY.TRANSLATIONS_EXISTS"),
           data: "",
           err: null,
         });
@@ -51,7 +54,7 @@ const createCity = async (req, res) => {
       isActive: true,
       createdAt: Math.floor(Date.now() / 1000),
       createdBy: adminId,
-    });
+    }, { transaction : transaction });
 
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
@@ -65,17 +68,20 @@ const createCity = async (req, res) => {
       });
     }
 
-    await MstCityTrans.bulkCreate(translationsData);
+    await MstCityTrans.bulkCreate(translationsData, { transaction : transaction });
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
-      msg: i18n.__("City.CITY_CREATED"),
+      status: HTTP_STATUS_CODE.CREATED,
+      message: i18n.__("CITY.CREATED"),
       data: { cityId: newCity.id },
       err: null,
     });
+  });
   } catch (error) {
     console.error("Error in creating city:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -89,17 +95,18 @@ const getCityById = async (req, res) => {
     const validation = new VALIDATOR(req.params, { cityId: validationRules.City.cityId, });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all(),
       });
     }
 
     const query = `
-      SELECT c.id, ct.id,ct.name,ct.lang
+      SELECT c.id AS cityId, ct.id AS cityTransId,ct.name,ct.lang
       FROM mst_city c
-      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id
-      WHERE c.id = :cityId
+      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.is_deleted = false
+      WHERE c.id = :cityId AND c.is_deleted = false
     `;
 
     const city = await sequelize.query(query, {
@@ -110,21 +117,24 @@ const getCityById = async (req, res) => {
 
     if (!city || city.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("City.CITY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CITY.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("City.CITY_FETCHED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("CITY.FETCHED"),
       data: city,
       err: null,
     });
   } catch (error) {
     console.error("Error in getting city:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -132,14 +142,21 @@ const getCityById = async (req, res) => {
 };
 
 const updateCity = async (req, res) => {
+ 
   try {
     const { cityId, translations } = req.body;
     const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.body, validationRules.City);
+    const validation = new VALIDATOR(req.body, 
+      { 
+        cityId: validationRules.City.cityId,
+        translations: validationRules.City.translations
+       }
+    );
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all(),
       });
@@ -152,11 +169,13 @@ const updateCity = async (req, res) => {
 
     if (!city) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("City.CITY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CITY.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
+    await sequelize.transaction(async (transaction) => {
 
     for (let i = 0; i < translations.length; i++) {
       const query = `
@@ -164,18 +183,18 @@ const updateCity = async (req, res) => {
         FROM mst_city_trans
         WHERE is_deleted = false
         AND city_id != :cityId
-        AND LOWER(lang) = LOWER(:lang) 
         AND LOWER(name) = LOWER(:name)
       `;
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name, cityId },
+        replacements: {  name: translations[i].name, cityId },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
 
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-          msg: i18n.__("City.CITY_TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CITY"),
+          status: HTTP_STATUS_CODE.CONFLICT,
+          message: i18n.__("CITY.TRANSLATIONS_EXISTS_ASSOCIATED_TO_ANOTHER_CITY"),
           data: "",
           err: null,
         });
@@ -196,24 +215,27 @@ const updateCity = async (req, res) => {
 
     city.updatedAt = Math.floor(Date.now() / 1000);
     city.updatedBy = adminId;
-    await city.save();
+    await city.save({ transaction: transaction});
 
     await MstCityTrans.update(
       { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { cityId: cityId, isDeleted: false } }
+      { where: { cityId: cityId, isDeleted: false }, transaction: transaction }
     );
 
-    await MstCityTrans.bulkCreate(translationsData);
+    await MstCityTrans.bulkCreate(translationsData, { transaction : transaction });
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("City.CITY_UPDATED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("CITY.UPDATED"),
       data: city,
       err: null,
     });
+  });
   } catch (error) {
     console.error("Error in updating city:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -221,6 +243,7 @@ const updateCity = async (req, res) => {
 };
 
 const deleteCity = async (req, res) => {
+  
   try {
     const { cityId } = req.params;
     const adminId = req.admin.id;
@@ -228,7 +251,8 @@ const deleteCity = async (req, res) => {
     const validation = new VALIDATOR(req.params, { cityId: validationRules.City.cityId });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all(),
       });
@@ -241,31 +265,39 @@ const deleteCity = async (req, res) => {
 
     if (!city) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("City.CITY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CITY.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
+    await sequelize.transaction(async (transaction) => {
 
     await MstCityTrans.update(
       { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { cityId: cityId, isDeleted: false } }
+      { where: { cityId: cityId, isDeleted: false }, transaction }
     );
 
     await MstCity.update(
       { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { id: cityId, isDeleted: false } }
+      { where: { id: cityId, isDeleted: false }, transaction }
     );
 
+    
+
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("City.CITY_DELETED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("CITY.DELETED"),
       data: city,
       err: null,
     });
+  });
   } catch (error) {
+    
     console.error("Error in deleting city:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -286,7 +318,7 @@ const getAllCity = async (req, res) => {
         ct.name AS cityName, 
         ct.lang AS translationLang
       FROM mst_city c
-      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.lang = :lang
+      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.lang = :lang AND ct.is_deleted = false
       WHERE c.is_deleted = false
       ORDER BY c.created_at asc
       LIMIT :limit OFFSET :offset
@@ -300,7 +332,8 @@ const getAllCity = async (req, res) => {
 
     if (!cities || cities.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("City.CITY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CITY.NOT_FOUND"),
         data: "",
         err: null
       });
@@ -319,7 +352,8 @@ const getAllCity = async (req, res) => {
     const totalCities = countResult[0]?.totalcities || 0;
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("City.CITY_FETCHED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("CITYFETCHED"),
       data: cities,
       totalCities,
       err: null
@@ -327,7 +361,8 @@ const getAllCity = async (req, res) => {
   } catch (error) {
     console.error("Error in getting cities:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null
     });
