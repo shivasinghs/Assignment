@@ -4,7 +4,8 @@ const { generateToken } = require("../../../helper/auth/generateJWTToken");
 const { validationRules } = require("../../../../config/validationRules");
 const i18n = require("../../../../config/i18n");
 const sendEmail = require('../../../helper/sendEmail');
-
+const { deleteImage } = require("../../../../config/multer");
+const sequelize = require('../../../../config/sequelize')
 
 const SignUp = async (req, res) => {
   try {
@@ -53,12 +54,12 @@ const SignUp = async (req, res) => {
     const attachment = [
       {
         filename: 'signup.jpeg',
-        path: PATH.join(__dirname, '../../../../images/signup.jpeg'),
+        path: PATH.join(__dirname, '../../../../assets/images/signup.jpeg'),
         cid: 'signup'
       },
       {
         filename: 'usersignup.jpeg',
-        path: PATH.join(__dirname, '../../../../images/usersignup.jpeg'),
+        path: PATH.join(__dirname, '../../../../assets/images/usersignup.jpeg'),
       }
     ]
 
@@ -148,61 +149,96 @@ const login = async (req, res) => {
   }
 };
 
+
 const updateProfile = async (req, res) => {
   try {
     const { name, countryId, cityId, companyName } = req.body;
     const userId = req.user.id;
+    const image = req.file;
 
-    const validation = new VALIDATOR(req.body, {
-      name: validationRules.User.name,
-      countryId: validationRules.User.countryId,
-      cityId: validationRules.User.cityId,
-      companyName: validationRules.User.companyName
-    });
+    await sequelize.transaction(async (transaction) => {
+      const validation = new VALIDATOR(req.body, {
+        name: validationRules.User.name,
+        countryId: validationRules.User.countryId,
+        cityId: validationRules.User.cityId,
+        companyName: validationRules.User.companyName,
+      });
 
-    if (validation.fails()) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
-        data: validation.errors.all(),
+      if (validation.fails()) {
+        return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+          status: HTTP_STATUS_CODE.BAD_REQUEST,
+          msg: i18n.__("messages.INVALID_INPUT"),
+          data: null,
+          err: validation.errors.all(),
+        });
+      }
+
+      const user = await User.findOne({
+        where: { id: userId },
+        attributes: ["id", "name", "countryId", "cityId", "companyName", "profileImage"],
+        transaction,
+      });
+
+      if (!user) {
+        return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
+          status: HTTP_STATUS_CODE.NOT_FOUND,
+          msg: i18n.__("User.Auth.USER_NOT_FOUND"),
+          data: null,
+          err: null,
+        });
+      }
+
+      if (
+        user.name === name &&
+        user.countryId === countryId &&
+        user.cityId === cityId &&
+        user.companyName === companyName
+      ) {
+        return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
+          status: HTTP_STATUS_CODE.BAD_REQUEST,
+          msg: i18n.__("messages.NO_CHANGES_DETECTED"),
+          data: null,
+          err: null,
+        });
+      }
+
+      let imagePath = user.profileImage;
+      if (image) {
+        if (imagePath) deleteImage(imagePath);
+        imagePath = image.filename;
+      }
+
+      await user.update(
+        {
+          name,
+          countryId,
+          cityId,
+          companyName,
+          profileImage: imagePath,
+          updatedAt: Math.floor(Date.now() / 1000),
+          updatedBy: userId,
+        },
+        { transaction }
+      );
+
+      return res.status(HTTP_STATUS_CODE.OK).json({
+        status: HTTP_STATUS_CODE.OK,
+        msg: i18n.__("User.Auth.PROFILE_UPDATED"),
+        data: { userId },
         err: null,
       });
-    }
-
-    const user = await User.findOne({ where: { id: userId }, attributes: ['id'] });
-    
-    if (!user) {
-      return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("User.Auth.USER_NOT_FOUND"),
-        data: "",
-        err: null,
-      });
-    }
-
-    const updatedData = {
-      name: name,
-      countryId: countryId,
-      cityId: cityId,
-      companyName: companyName
-    };
-
-    user.updatedAt = Math.floor(Date.now() / 1000);
-    user.updatedBy = userId;
-    await user.update(updatedData);
-
-    return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("User.Auth.PROFILE_UPDATED"),
-      data: { userId },
-      err: null,
     });
   } catch (error) {
     console.error("Error in updating profile:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
       msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: error.message,
-      err: "",
+      data: null,
+      err: error.message,
     });
   }
 };
+
 
 const verifyOTP = async (req, res) => {
   try {

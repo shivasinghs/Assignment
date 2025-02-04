@@ -4,6 +4,8 @@ const VALIDATOR = require('validatorjs');
 const BCRYPT = require('bcryptjs');
 const { Op } = require('sequelize');
 const PATH = require('path')
+const FS = require('fs');
+const MULTER = require('multer')
 
 const HTTP_STATUS_CODE = {
     OK: 200,
@@ -27,5 +29,7 @@ module.exports = {
     Op,
     HTTP_STATUS_CODE,
     TOKEN_EXPIRY,
-    PATH
+    PATH,
+    FS,
+    MULTER,
 };
