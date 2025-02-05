@@ -17,7 +17,8 @@ const createAccount = async (req, res) => {
     });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all(),
       });
@@ -30,7 +31,8 @@ const createAccount = async (req, res) => {
 
     if (!category) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CATEGORY.NOT_FOUND"),
         data: "",
         err: null,
       });
@@ -43,7 +45,8 @@ const createAccount = async (req, res) => {
 
     if (!subCategory) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("SubCategory.SUBCATEGORY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("SUBCATEGORY.NOT_FOUND"),
         data: "",
         err: null,
       });
@@ -54,51 +57,59 @@ const createAccount = async (req, res) => {
         SELECT id 
         FROM account_name_trans
         WHERE is_deleted = false
+        AND lang = '${translations[i].lang}'
         AND LOWER(name) = LOWER(:name)
       `;
 
       const existingTranslation = await sequelize.query(query, {
-        replacements: { lang: translations[i].lang, name: translations[i].name },
+        replacements: { name: translations[i].name },
         type: sequelize.QueryTypes.SELECT,
         raw: true,
       });
 
       if (existingTranslation.length > 0) {
         return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-          msg: i18n.__("Account.ACCOUNT_TRANSLATION_EXISTS"),
+          status: HTTP_STATUS_CODE.CONFLICT,
+          message: i18n.__("ACCOUNT.TRANSLATION_EXISTS"),
           data: "",
           err: null,
         });
       }
     }
 
-    const newAccount = await Account.create({
-      id: uuidv4(),
+    const accountId = uuidv4();
+
+    const translationsData = [];
+      for (let i = 0; i < translations.length; i++) {
+        translationsData.push({
+          id: uuidv4(),
+          name: translations[i].name,
+          lang: translations[i].lang,
+          accountId,
+          createdAt: Math.floor(Date.now() / 1000),
+          createdBy: userId,
+        });
+      }
+
+    await sequelize.transaction(async (transaction) => {
+
+    await Account.create({
+      id: accountId,
       categoryId,
       subCategoryId,
       description,
       userId,
       createdAt: Math.floor(Date.now() / 1000),
       createdBy: userId,
-    });
-
-    const translationsData = [];
-    for (let i = 0; i < translations.length; i++) {
-      translationsData.push({
-        id: uuidv4(),
-        name: translations[i].name,
-        lang: translations[i].lang,
-        accountId: newAccount.id,
-        createdAt: Math.floor(Date.now() / 1000),
-        createdBy: userId,
-      });
-    }
-
-    await AccountNameTrans.bulkCreate(translationsData);
+    },{transaction});
+   
+    await AccountNameTrans.bulkCreate(translationsData , {transaction});
+  })
 
     return res.status(HTTP_STATUS_CODE.CREATED).json({
-      msg: i18n.__("Account.ACCOUNT_CREATED"),
-      data: { accountId: newAccount.id ,userId},
+      status: HTTP_STATUS_CODE.CREATED,
+      message: i18n.__("ACCOUNT.CREATED"),
+      data: { accountId ,userId},
       err: null,
     });
   } catch (error) {
@@ -119,7 +130,8 @@ const getAccountById = async (req, res) => {
     const validation = new VALIDATOR(req.params, { accountId: validationRules.Account.accountId });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: "",
         err: validation.errors.all(),
       });
@@ -133,15 +145,11 @@ const getAccountById = async (req, res) => {
       a.description, 
       at.id AS translation_id, 
       at.name AS translation_name, 
-      c.id AS category_id, 
-      s.id AS subcategory_id
       FROM account a
-      LEFT JOIN account_name_trans at ON at.account_id = a.id
-      LEFT JOIN category c ON c.id = a.category_id
-      LEFT JOIN sub_category s ON s.id = a.subcategory_id
-      WHERE a.id = :accountId AND a.is_deleted = false AND a.user_id = :userId
-
-    `;
+      LEFT JOIN account_name_trans at ON at.account_id = a.id AND at.is_deleted = false
+      LEFT JOIN category c ON c.id = a.category_id AND c.is_deleted = false
+      LEFT JOIN sub_category s ON s.id = a.subcategory_id AND s.is_deleted = false
+      WHERE a.id = :accountId AND a.is_deleted = false AND a.user_id = :userId `;
 
     const account = await sequelize.query(query, {
       replacements: { accountId,userId },
@@ -151,21 +159,24 @@ const getAccountById = async (req, res) => {
 
     if (!account || account.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Account.ACCOUNT_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("ACCOUNT.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Account.ACCOUNT_FETCHED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("ACCOUNT.FETCHED"),
       data: account,
       err: null,
     });
   } catch (error) {
     console.error("Error in getting account:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -180,7 +191,8 @@ const updateAccount = async (req, res) => {
     const validation = new VALIDATOR(req.body, validationRules.Account);
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
-        msg: i18n.__("messages.INVALID_INPUT"),
+        status: HTTP_STATUS_CODE.BAD_REQUEST,
+        message: i18n.__("messages.INVALID_INPUT"),
         data: validation.errors.all(),
         err: null,
       });
@@ -192,7 +204,8 @@ const updateAccount = async (req, res) => {
     });
     if (!account) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Account.ACCOUNT_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("ACCOUNT.NOT_FOUND"),
         data: "",
         err: null,
       });
@@ -209,7 +222,8 @@ const updateAccount = async (req, res) => {
 
     if (!category) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Category.CATEGORY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("CATEGORY.NOT_FOUND"),
         data: "",
         err: null,
       });
@@ -217,7 +231,8 @@ const updateAccount = async (req, res) => {
 
     if (!subCategory) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("SubCategory.SUBCATEGORY_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("SUBCATEGORY.NOT_FOUND"),
         data: "",
         err: null,
       });
@@ -226,23 +241,27 @@ const updateAccount = async (req, res) => {
     if (translations && translations.length > 0) {
       for (let i = 0; i < translations.length; i++) {
         const query = `
-           SELECT id 
-            FROM account_name_trans
-            WHERE is_deleted = false
-            AND account_id != :accountId
-            AND LOWER(name) = LOWER(:name)
-            AND a.user_id = :userID
+           SELECT at.id AS accountNameTransId
+           FROM account_name_trans at
+           INNER JOIN account a ON a.id = at.account_id  
+           WHERE at.is_deleted = false
+           AND at.account_id != :accountId
+           AND lang = '${translations[i].lang}'
+           AND LOWER(at.name) = LOWER(:name)
+           AND a.is_deleted = false
+           AND a.user_id = :userId;
         `;
 
         const existingTranslation = await sequelize.query(query, {
-          replacements: { lang: translations[i].lang, name: translations[i].name, accountId,userId },
+          replacements: {name: translations[i].name, accountId,userId },
           type: sequelize.QueryTypes.SELECT,
           raw: true,
         });
 
         if (existingTranslation.length > 0) {
           return res.status(HTTP_STATUS_CODE.CONFLICT).json({
-            msg: i18n.__("Account.ACCOUNT_TRANSLATIONS_EXISTS"),
+            status: HTTP_STATUS_CODE.CONFLICT,
+            message: i18n.__("ACCOUNT.TRANSLATIONS_EXISTS"),
             data: "",
             err: null,
           });
@@ -261,32 +280,36 @@ const updateAccount = async (req, res) => {
         });
       }
       
+      await sequelize.transaction(async (transaction) => {
+
       account.categoryId = categoryId;
       account.subCategoryId = subCategoryId;
       account.description = description;
       account.updatedAt = Math.floor(Date.now() / 1000);
       account.updatedBy = userId;  
-      await account.save();
+      await account.save({transaction});
 
       await AccountNameTrans.update(
         { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: userId },
-        { where: { accountId, isDeleted: false } }
+        { where: { accountId, isDeleted: false },transaction }
       );
 
       if (translationsData.length > 0) {
-        await AccountNameTrans.bulkCreate(translationsData);
+        await AccountNameTrans.bulkCreate(translationsData,{transaction});
       }
+    })
     }
-
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Account.ACCOUNT_UPDATED"),
-      data: { account, translations },
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("ACCOUNT.UPDATED"),
+      data: { account},
       err: null,
     });
   } catch (error) {
     console.error("Error in updating account:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
@@ -298,52 +321,60 @@ const deleteAccount = async (req, res) => {
   try {
     const { accountId } = req.params;
     const userId = req.user.id;
+
     const account = await Account.findOne({
-      where : {accountId : accountId, userId : userId, is_deleted : false},
-      attributes : ['id']
+      where: { id: accountId, userId: userId, isDeleted: false },
+      attributes: ['id'],
     });
-    
+
     if (!account) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Account.ACCOUNT_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("ACCOUNT.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
 
-    await AccountNameTrans.update(
-      { 
-        isDeleted: true, 
-        deletedAt: Math.floor(Date.now() / 1000), 
-        deletedBy: userId 
-      },
-      { 
-        where: { accountId, isDeleted: false } 
-      }
-    );
-   
-    await Account.update(
-      { 
-        isDeleted: true, 
-        deletedAt: Math.floor(Date.now() / 1000), 
-        deletedBy: userId 
-      },
-      { 
-        where: { id: accountId, isDeleted: false } 
-      }
-    );
+      await sequelize.transaction(async (transaction) => {
+        await AccountNameTrans.update(
+          {
+            isDeleted: true,
+            deletedAt: Math.floor(Date.now() / 1000),
+            deletedBy: userId,
+          },
+          {
+            where: { accountId, isDeleted: false },
+            transaction,
+          }
+        );
 
-    return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Account.ACCOUNT_DELETED"),
-      data: "",
-      err: null,
-    });
+        await Account.update(
+          {
+            isDeleted: true,
+            deletedAt: Math.floor(Date.now() / 1000),
+            deletedBy: userId,
+          },
+          {
+            where: { id: accountId, isDeleted: false },
+            transaction,
+          }
+        );
+      });
+
+      return res.status(HTTP_STATUS_CODE.OK).json({
+        status: HTTP_STATUS_CODE.OK,
+        message: i18n.__("ACCOUNT.DELETED"),
+        data: "",
+        err: null,
+      });
   } catch (error) {
     console.error("Error in deleting account:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
-      data: error.message,
-      err: null,
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
+      data: "",
+      err: error.message,
     });
   }
 };
@@ -358,9 +389,9 @@ const getAllAccounts = async (req, res) => {
       SELECT a.id, a.category_id, a.subcategory_id, a.description, 
              ct.id AS category, st.id AS subCategory, at.name AS translationName, at.lang
       FROM account a
-      LEFT JOIN account_name_trans at ON at.account_id = a.id AND at.lang = :lang
-      LEFT JOIN category ct ON ct.id = a.category_id
-      LEFT JOIN sub_category st ON st.id = a.subcategory_id
+      LEFT JOIN account_name_trans at ON at.account_id = a.id AND at.lang = :lang AND at.is_deleted = false
+      LEFT JOIN category ct ON ct.id = a.category_id AND ct.is_deleted = false
+      LEFT JOIN sub_category st ON st.id = a.subcategory_id AND st.is_deleted = false
       WHERE a.user_id = :userId AND a.is_deleted = false
     `;
 
@@ -372,21 +403,24 @@ const getAllAccounts = async (req, res) => {
 
     if (!accounts || accounts.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        msg: i18n.__("Account.ACCOUNT_NOT_FOUND"),
+        status: HTTP_STATUS_CODE.NOT_FOUND,
+        message: i18n.__("ACCOUNT.NOT_FOUND"),
         data: "",
         err: null,
       });
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({
-      msg: i18n.__("Account.ACCOUNT_FETCHED"),
+      status: HTTP_STATUS_CODE.OK,
+      message: i18n.__("ACCOUNT.FETCHED"),
       data: accounts,
       err: null,
     });
   } catch (error) {
     console.error("Error in getting all accounts:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });

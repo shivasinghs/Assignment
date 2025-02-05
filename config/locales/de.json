@@ -44,7 +44,8 @@
 		"LISTED": "Kategorien erfolgreich aufgelistet",
 		"TRANSLATIONS_EXISTS": "Kategorieübersetzungen existieren bereits",
 		"FETCHED": "Kategorien erfolgreich abgerufen",
-		"ASSIGNED_TO_ACCOUNT": "Kategorie dem Konto zugewiesen"
+		"ASSIGNED_TO_ACCOUNT": "Kategorie dem Konto zugewiesen",
+		"CATEGORIES_FETCHED": "CATEGORY.CATEGORIES_FETCHED"
 	},
 	"SUBCATEGORY": {
 		"CREATED": "Unterkategorie erfolgreich erstellt",
