@@ -393,7 +393,7 @@ const getAllCategories = async (req, res) => {
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       status : HTTP_STATUS_CODE.OK,
-      message: i18n.__("CATEGORY.CATEGORIES_FETCHED"),
+      msg: i18n.__("CATEGORY.CATEGORIES_FETCHED"),
       data: categories,
       total: totalCategories,
       err: null
@@ -457,8 +457,7 @@ const listCategoriesWithSubcategories = async (req, res) => {
 
     if (categoriesWithSubcategories.length === 0) {
       return res.status(HTTP_STATUS_CODE.NOT_FOUND).json({
-        status : HTTP_STATUS_CODE.NOT_FOUND,
-        message: i18n.__("CATEGORY.CATEGORY_WITH_SUBCATEGORIES_NOT_FOUND"),
+        
         data: "",
         err: null
       })

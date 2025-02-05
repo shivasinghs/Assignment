@@ -1,137 +1,20 @@
 {
-	"USER": {
-		"Auth": {
-			"USER_CREATION_FAILED": "User creation failed",
-			"INVALID_EMAIL_FORMAT": "Invalid email format",
-			"INVALID_PASSWORD_FORMAT": "Invalid password format",
-			"INVALID_CREDENTIALS": "Invalid email or password",
-			"LOGIN_REQUIRED": "Please log in to access this route",
-			"USER_NOT_FOUND": "User no longer exists",
-			"FIRST_NAME_REQUIRED": "First name is required",
-			"LAST_NAME_REQUIRED": "Last name is required",
-			"PASSWORD_TOO_SHORT": "Password must be at least 8 characters long",
-			"PASSWORDS_MISMATCH": "Password and confirmation must match",
-			"INVALID_USER_TYPE": "Invalid user type",
-			"INVALID_TOKEN": "Invalid token. Please log in again",
-			"USER_CREATED": "User successfully created",
-			"LOGIN_SUCCESS": "Login successful",
-			"PROFILE_UPDATED": "Profile successfully updated"
-		},
-		"AUTH": {
-			"PASSWORD_CHANGED": "USER.AUTH.PASSWORD_CHANGED"
-		}
-	},
-	"ADMIN": {
-		"Auth": {
-			"PERMISSION_DENIED": "You do not have permission to perform this action",
-			"CREATION_FAILED": "Admin creation failed",
-			"ALREADY_EXISTS": "Admin already exists",
-			"CREATED_SUCCESSFULLY": "Admin successfully created",
-			"UPDATED_SUCCESSFULLY": "Admin successfully updated",
-			"DELETED_SUCCESSFULLY": "Admin successfully deleted",
-			"LOGIN_SUCCESS": "Admin successfully logged in",
-			"INVALID_CREDENTIALS": "Invalid email or password",
-			"CREATED": "Admin successfully created"
-		}
-	},
-	"CATEGORY": {
-		"NOT_FOUND": "No categories found",
-		"CREATED": "Category successfully created",
-		"UPDATED": "Category successfully updated",
-		"DELETED": "Category successfully deleted",
-		"NAME_REQUIRED": "Category name is required",
-		"TRANSLATIONS_REQUIRED": "Translations for the category are required",
-		"LISTED": "Categories successfully listed",
-		"TRANSLATIONS_EXISTS": "Category translations already exist",
-		"FETCHED": "Categories successfully fetched",
-		"ASSIGNED_TO_ACCOUNT": "Category assigned to account",
-		"CATEGORIES_FETCHED": "CATEGORY.CATEGORIES_FETCHED"
-	},
 	"SUBCATEGORY": {
-		"CREATED": "Subcategory successfully created",
-		"FETCHED": "Subcategories successfully fetched",
-		"UPDATED": "Subcategory successfully updated",
-		"DELETED": "Subcategory successfully deleted",
-		"NOT_FOUND": "No subcategories found",
-		"TRANSLATIONS_REQUIRED": "Translations for the subcategory are required",
-		"TRANSLATIONS_EXISTS": "Subcategory translations already exist"
+		"FETCHED": "SUBCATEGORY.FETCHED"
 	},
-	"COUNTRY": {
-		"NOT_FOUND": "No countries found",
-		"CREATED": "Country successfully created",
-		"UPDATED": "Country successfully updated",
-		"DELETED": "Country successfully deleted",
-		"NAME_REQUIRED": "Country name is required",
-		"TRANSLATIONS_REQUIRED": "Translations for the country are required",
-		"FETCHED": "Countries successfully fetched",
-		"TRANSLATIONS_EXISTS": "Country translations already exist"
-	},
-	"CITY": {
-		"NOT_FOUND": "No cities found",
-		"CREATED": "City successfully created",
-		"UPDATED": "City successfully updated",
-		"DELETED": "City successfully deleted",
-		"FETCHED": "Cities successfully fetched",
-		"TRANSLATIONS_REQUIRED": "Translations for the city are required"
-	},
-	"Messages": {
-		"INTERNAL_ERROR": "Internal server error",
-		"NO_RESOURCES_FOUND": "No resources found",
-		"RESOURCE_NOT_FOUND": "Resource not found",
-		"INVALID_INPUT": "Invalid input",
-		"EMAIL_ALREADY_EXISTS": "Email already exists",
-		"SERVER_ERROR": "Server error"
-	},
-	"ACCOUNT": {
-		"CREATED": "Account successfully created",
-		"NOT_FOUND": "Account not found",
-		"FETCHED": "Accounts successfully fetched",
-		"UPDATED": "Account successfully updated",
-		"DELETED": "Account successfully deleted"
+	"User": {
+		"Auth": {
+			"LOGIN_SUCCESS": "User.Auth.LOGIN_SUCCESS",
+			"PROFILE_UPDATED": "User.Auth.PROFILE_UPDATED"
+		}
 	},
 	"messages": {
-		"INVALID_TOKEN": "messages.INVALID_TOKEN",
-		"INTERNAL_ERROR": "messages.INTERNAL_ERROR",
-		"NO_AUTH_HEADER": "messages.NO_AUTH_HEADER",
 		"INVALID_INPUT": "messages.INVALID_INPUT",
-		"INVALID_OTP": "messages.INVALID_OTP",
-		"NO_CHANGES_DETECTED": "messages.NO_CHANGES_DETECTED"
+		"INTERNAL_ERROR": "messages.INTERNAL_ERROR"
 	},
 	"Admin": {
 		"Auth": {
 			"LOGIN_SUCCESS": "Admin.Auth.LOGIN_SUCCESS"
-		}
-	},
-	"Category": {
-		"CATEGORY_WITH_SUBCATEGORIES_FETCHED": "Category.CATEGORY_WITH_SUBCATEGORIES_FETCHED",
-		"CATEGORY_WITH_SUBCATEGORIES_NOT_FOUND": "Category.CATEGORY_WITH_SUBCATEGORIES_NOT_FOUND",
-		"CATEGORY_CREATED": "Category.CATEGORY_CREATED",
-		"CATEGORY_FETCHED": "Category.CATEGORY_FETCHED",
-		"CATEGORIES_FETCHED": "Category.CATEGORIES_FETCHED"
-	},
-	"SubCategory": {
-		"SUBCATEGORY_CREATED": "SubCategory.SUBCATEGORY_CREATED",
-		"SUBCATEGORY_DELETED": "SubCategory.SUBCATEGORY_DELETED"
-	},
-	"Country": {
-		"COUNTRY_FETCHED": "Country.COUNTRY_FETCHED"
-	},
-	"City": {
-		"CITY_FETCHED": "City.CITY_FETCHED",
-		"CITY_TRANSLATIONS_EXISTS": "City.CITY_TRANSLATIONS_EXISTS",
-		"CITY_CREATED": "City.CITY_CREATED"
-	},
-	"User": {
-		"Auth": {
-			"EMAIL_ALREADY_EXISTS": "User.Auth.EMAIL_ALREADY_EXISTS",
-			"USER_CREATED": "User.Auth.USER_CREATED",
-			"LOGIN_SUCCESS": "User.Auth.LOGIN_SUCCESS",
-			"OTP_VERIFIED": "User.Auth.OTP_VERIFIED",
-			"USER_NOT_VERIFIED": "User.Auth.USER_NOT_VERIFIED",
-			"PASSWORD_RESET_EMAIL_SENT": "User.Auth.PASSWORD_RESET_EMAIL_SENT",
-			"PASSWORD_CHANGED": "User.Auth.PASSWORD_CHANGED",
-			"USER_NOT_FOUND": "User.Auth.USER_NOT_FOUND",
-			"PROFILE_UPDATED": "User.Auth.PROFILE_UPDATED"
 		}
 	}
 }

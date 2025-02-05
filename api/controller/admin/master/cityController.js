@@ -5,6 +5,7 @@ const { validationRules } = require("../../../../config/validationRules");
 const sequelize = require("../../../../config/sequelize");
 
 const createCity = async (req, res) => {
+
   try {
     const { countryId, translations } = req.body;
     const adminId = req.admin.id;
@@ -106,7 +107,7 @@ const getCityById = async (req, res) => {
     }
 
     const query = `
-      SELECT c.id AS cityId,ct.id AS cityTransId,ct.name,ct.lang
+      SELECT c.id AS cityId, ct.id AS cityTransId,ct.name,ct.lang
       FROM mst_city c
       LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.is_deleted = false
       WHERE c.id = :cityId AND c.is_deleted = false
@@ -145,6 +146,7 @@ const getCityById = async (req, res) => {
 };
 
 const updateCity = async (req, res) => {
+ 
   try {
     const { cityId, translations } = req.body;
     const adminId = req.admin.id;
@@ -247,6 +249,7 @@ const updateCity = async (req, res) => {
 };
 
 const deleteCity = async (req, res) => {
+  
   try {
     const { cityId } = req.params;
     const adminId = req.admin.id;
@@ -279,7 +282,7 @@ const deleteCity = async (req, res) => {
 
     await MstCityTrans.update(
       { isDeleted: true, deletedAt: Math.floor(Date.now() / 1000), deletedBy: adminId },
-      { where: { cityId: cityId, isDeleted: false } ,transaction}
+      { where: { cityId: cityId, isDeleted: false }, transaction }
     );
 
     await MstCity.update(
@@ -295,6 +298,7 @@ const deleteCity = async (req, res) => {
       err: null,
     });
   } catch (error) {
+    
     console.error("Error in deleting city:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
       status: HTTP_STATUS_CODE.SERVER_ERROR,
@@ -319,8 +323,7 @@ const getAllCity = async (req, res) => {
         ct.name AS cityName, 
         ct.lang AS translationLang
       FROM mst_city c
-      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id 
-      AND ct.lang = :lang AND ct.is_deleted = false
+      LEFT JOIN mst_city_trans ct ON ct.city_id = c.id AND ct.lang = :lang AND ct.is_deleted = false
       WHERE c.is_deleted = false
       ORDER BY c.created_at asc
       LIMIT :limit OFFSET :offset

@@ -9,11 +9,11 @@ const createSubCategory = async (req, res) => {
     const { categoryId, translations } = req.body;
     const adminId = req.admin.id;
 
-    const validation = new VALIDATOR(req.body, 
-      { 
+    const validation = new VALIDATOR(req.body, { 
       categoryId: validationRules.SubCategory.categoryId, 
-      translations: validationRules.SubCategory.translations
+      translations: validationRules.SubCategory.translations 
     });
+
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         status: HTTP_STATUS_CODE.BAD_REQUEST,
@@ -62,7 +62,7 @@ const createSubCategory = async (req, res) => {
           err: null,
         });
       }
-    }      
+    }
 
     const subcategoryId = uuidv4();
 
@@ -107,7 +107,6 @@ const createSubCategory = async (req, res) => {
     });
   }
 };
-
 
 const getSubCategoryById = async (req, res) => {
   try {
@@ -169,8 +168,8 @@ const updateSubCategory = async (req, res) => {
 
     const validation = new VALIDATOR(req.body, { 
       subCategoryId: validationRules.SubCategory.subCategoryId, 
-      translations: validationRules.SubCategory.translations
-     });
+      translations: validationRules.SubCategory.translations 
+    });
 
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -223,19 +222,18 @@ const updateSubCategory = async (req, res) => {
         });
       }
     }
-    
     const translationsData = [];
     for (let i = 0; i < translations.length; i++) {
       translationsData.push({
         id: uuidv4(),
         name: translations[i].name,
         lang: translations[i].lang,
-        subcategoryId: subCategory.id,
-        createdBy: adminId,
+        subCategoryId,
         createdAt: Math.floor(Date.now() / 1000),
+        createdBy: adminId,
       });
     }
-   
+
     await sequelize.transaction(async (transaction) => {
 
     subCategory.updatedAt = Math.floor(Date.now() / 1000);
@@ -301,7 +299,7 @@ const deleteSubCategory = async (req, res) => {
         subCategoryId: subCategoryId,
         isDeleted: false,
       }
-    });    
+    });
 
     if (accountsWithSubCategory > 0) {
       return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
@@ -341,6 +339,7 @@ const deleteSubCategory = async (req, res) => {
   }
 };
 
+
 const getAllSubCategory = async (req, res) => {
   try {
     const lang = i18n.getLocale() || 'en';
@@ -375,16 +374,17 @@ const getAllSubCategory = async (req, res) => {
     }
 
     const countQuery = `
-      SELECT COUNT(*) as totalsubcategories
+      SELECT COUNT(*) as totalSubcategories
       FROM sub_category sc
       WHERE sc.is_deleted = false
     `;
+
     const countResult = await sequelize.query(countQuery, {
       type: sequelize.QueryTypes.SELECT,
       raw: true
     });
-
-    const totalSubCategories = countResult[0]?.totasubcategories || 0;
+    
+    const totalSubCategories = countResult[0]?.totalsubcategories || 0;  
 
     return res.status(HTTP_STATUS_CODE.OK).json({
       status: HTTP_STATUS_CODE.OK,
@@ -403,7 +403,6 @@ const getAllSubCategory = async (req, res) => {
     });
   }
 };
-
 
 
 module.exports = {

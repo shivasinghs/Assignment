@@ -8,7 +8,7 @@ const createCountry = async (req, res) => {
   try {
     const { translations } = req.body;
     const adminId = req.admin.id;
-    const validation = new VALIDATOR(req.body, {translations : validationRules.Country.translations});
+    const validation = new VALIDATOR(req.body, { translations: validationRules.Country.translations });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
         status: HTTP_STATUS_CODE.BAD_REQUEST,
@@ -236,11 +236,10 @@ const updateCountry = async (req, res) => {
       status: HTTP_STATUS_CODE.SERVER_ERROR,
       message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
-      err: "",
+      err: null,
     });
   }
 };
-
 
 const deleteCountry = async (req, res) => {
   try {
@@ -296,11 +295,10 @@ const deleteCountry = async (req, res) => {
       status: HTTP_STATUS_CODE.SERVER_ERROR,
       message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
-      err: "",
+      err: null,
     });
   }
 };
-
 
 const getAllCountry = async (req, res) => {
   try {
@@ -312,7 +310,7 @@ const getAllCountry = async (req, res) => {
     const query = `
       SELECT 
         c.id AS countryId,
-        ct.id AS countryTransId ,
+        ct.id AS countryTransId,
         ct.name AS countryName, 
         ct.lang AS translationLang 
       FROM mst_country c
@@ -367,7 +365,6 @@ const getAllCountry = async (req, res) => {
     });
   }
 };
-
 
 
 module.exports = {

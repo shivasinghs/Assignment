@@ -9,11 +9,11 @@ const createAccount = async (req, res) => {
     const { translations, categoryId, subCategoryId, description } = req.body;
     const userId = req.user.id;
 
-    const validation = new VALIDATOR(req.body,{
-      translations : validationRules.Account.translations,
-      categoryId : validationRules.Account.categoryId, 
-      subCategoryId : validationRules.Account.subCategoryId,
-       description : validationRules.Account.description
+    const validation = new VALIDATOR(req.body, {
+      translations: validationRules.Account.translations,
+      categoryId: validationRules.Account.categoryId,
+      subCategoryId: validationRules.Account.subCategoryId,
+      description: validationRules.Account.description
     });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -115,18 +115,19 @@ const createAccount = async (req, res) => {
   } catch (error) {
     console.error("Error in creating account:", error);
     return res.status(HTTP_STATUS_CODE.SERVER_ERROR).json({
-      msg: i18n.__("messages.INTERNAL_ERROR"),
+      status: HTTP_STATUS_CODE.SERVER_ERROR,
+      message: i18n.__("messages.INTERNAL_ERROR"),
       data: error.message,
       err: null,
     });
   }
 };
 
-
 const getAccountById = async (req, res) => {
   try {
     const { accountId } = req.params;
     const userId = req.user.id;
+
     const validation = new VALIDATOR(req.params, { accountId: validationRules.Account.accountId });
     if (validation.fails()) {
       return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({
@@ -138,21 +139,22 @@ const getAccountById = async (req, res) => {
     }
 
     const query = `
-     SELECT 
-      a.id AS account_id, 
-      a.category_id, 
-      a.subcategory_id, 
-      a.description, 
-      at.id AS translation_id, 
-      at.name AS translation_name, 
+      SELECT 
+        a.id AS account_id, 
+        a.category_id, 
+        a.subcategory_id, 
+        a.description, 
+        at.id AS translation_id, 
+        at.name AS translation_name
       FROM account a
       LEFT JOIN account_name_trans at ON at.account_id = a.id AND at.is_deleted = false
       LEFT JOIN category c ON c.id = a.category_id AND c.is_deleted = false
-      LEFT JOIN sub_category s ON s.id = a.subcategory_id AND s.is_deleted = false
-      WHERE a.id = :accountId AND a.is_deleted = false AND a.user_id = :userId `;
+      LEFT JOIN sub_category s ON s.id = a.subcategory_id AND s.is_deleted = false  
+      WHERE a.id = :accountId AND a.is_deleted = false AND a.user_id = :userId
+    `;
 
     const account = await sequelize.query(query, {
-      replacements: { accountId,userId },
+      replacements: { accountId, userId },
       type: sequelize.QueryTypes.SELECT,
       raw: true,
     });
@@ -265,8 +267,9 @@ const updateAccount = async (req, res) => {
             data: "",
             err: null,
           });
+          }
         }
-      }
+
 
       const translationsData = [];
       for (let i = 0; i < translations.length; i++) {
@@ -295,7 +298,7 @@ const updateAccount = async (req, res) => {
       );
 
       if (translationsData.length > 0) {
-        await AccountNameTrans.bulkCreate(translationsData,{transaction});
+        await AccountNameTrans.bulkCreate(translationsData, {transaction});
       }
     })
     }
@@ -315,7 +318,6 @@ const updateAccount = async (req, res) => {
     });
   }
 };
-
 
 const deleteAccount = async (req, res) => {
   try {
@@ -379,10 +381,9 @@ const deleteAccount = async (req, res) => {
   }
 };
 
-
 const getAllAccounts = async (req, res) => {
   try {
-    const lang = i18n.getLocale() || "en"; 
+    const lang = i18n.getLocale() || "en";
     const userId = req.user.id;
 
     const query = `
@@ -396,7 +397,7 @@ const getAllAccounts = async (req, res) => {
     `;
 
     const accounts = await sequelize.query(query, {
-      replacements: { userId, lang }, 
+      replacements: { userId, lang },
       type: sequelize.QueryTypes.SELECT,
       raw: true,
     });
@@ -426,8 +427,6 @@ const getAllAccounts = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = {
   createAccount,
