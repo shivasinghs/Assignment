@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const PATH = require('path')
 const FS = require('fs');
 const MULTER = require('multer')
+const NODEMAILER = require('nodemailer');
 
 const HTTP_STATUS_CODE = {
     OK: 200,
@@ -19,7 +20,7 @@ const HTTP_STATUS_CODE = {
     SERVER_ERROR: 500,
   };
 
-const TOKEN_EXPIRY = "2h";
+const TOKEN_EXPIRY = "1h";
 
 module.exports = {
     JWT,
@@ -32,4 +33,5 @@ module.exports = {
     PATH,
     FS,
     MULTER,
+    NODEMAILER,
 };

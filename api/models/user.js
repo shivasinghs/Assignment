@@ -1,9 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
-const MstCountry = require('./MstCountry');
-const MstCity = require('./MstCity');
 
-const User = sequelize.define('User', {
+const User = sequelize.define("User", {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -23,89 +21,39 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  countryId: {
-    type: DataTypes.UUID,
+  gender: {
+    type: DataTypes.STRING,
     allowNull: false,
-    references: {
-      model: MstCountry, 
-      key: 'id',
-    },
-    field: 'country_id',
   },
-  cityId: {
+  role: {
+    type: DataTypes.ENUM("owner", "employee"),
+    allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  businessTypeId: {
     type: DataTypes.UUID,
     allowNull: false,
-    references: {
-      model: MstCity, 
-      key: 'id',
-    },
-    field: 'city_id',
+    field: 'business_type_id',
   },
   companyName: {
     type: DataTypes.STRING,
-    field: 'company_name',
-    allowNull: true,
+    allowNull: false,
+    unique: true,
+    field: 'company_name'
   },
-  profileImage: {
+  companyDescription: {
     type: DataTypes.STRING,
     allowNull: true,
-    field: 'profile_image'
-  },  
-  isActive: {
-    type: DataTypes.BOOLEAN,
-    field: 'is_active',
-    defaultValue: true,
-  },
-  createdAt: {
-    type: DataTypes.BIGINT,
-    field: 'created_at',
-    allowNull: false,
-    defaultValue: Math.floor(Date.now() / 1000),
-  },
-  createdBy: {
-    type: DataTypes.UUID,
-    field: 'created_by',
-    allowNull: true,
-  },
-  updatedAt: {
-    type: DataTypes.BIGINT,
-    field: 'updated_at',
-    allowNull: true,
-  },
-  updatedBy: {
-    type: DataTypes.UUID,
-    field: 'updated_by',
-    allowNull: true,
-  },
-  isDeleted: {
-    type: DataTypes.BOOLEAN,
-    field: 'is_deleted',
-    defaultValue: false,
-  },
-  deletedBy: {
-    type: DataTypes.UUID,
-    field: 'deleted_by',
-    allowNull: true,
-  },
-  deletedAt: {
-    type: DataTypes.BIGINT,
-    field: 'deleted_at',
-    allowNull: true,
-  },
-  otp: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
+    field:'company_description'
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
     field: 'is_verified',
     defaultValue: false,
     allowNull: false,
-  },
-  otpExpiresAt: {
-    type: DataTypes.BIGINT,
-    allowNull: true,
-    field: 'otp_expires_at',
   },
   forgotPasswordOtp: {
     type: DataTypes.INTEGER,
@@ -116,11 +64,53 @@ const User = sequelize.define('User', {
     type: DataTypes.BIGINT,
     allowNull: true,
     field: 'forgot_password_otp_expires_at',
-  },  
+  }, 
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    field: "is_active",
+    defaultValue: true
+  },
+  createdAt: {
+    type: DataTypes.BIGINT,
+    field: "created_at",
+    allowNull: false,
+    defaultValue: Math.floor(Date.now() / 1000)
+  },
+  createdBy: {
+    type: DataTypes.UUID,
+    field: "created_by",
+    allowNull: true
+  },
+  updatedAt: {
+    type: DataTypes.INTEGER,
+    field: "updated_at",
+    allowNull: true
+  },
+  updatedBy: {
+    type: DataTypes.UUID,
+    field: "updated_by",
+    allowNull: true
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    field: "is_deleted",
+    defaultValue: false
+  },
+  deletedBy: {
+    type: DataTypes.UUID,
+    field: "deleted_by",
+    allowNull: true
+  },
+  deletedAt: {
+    type: DataTypes.DATE,
+    field: "deleted_at",
+    allowNull: true
+  }
 }, {
-  tableName: 'user',
+  tableName: "users",
   freezeTableName: true,
   timestamps: false,
 });
 
 module.exports = User;
+

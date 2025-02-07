@@ -1,12 +1,13 @@
 const redis = require('redis');
+require('dotenv').config();
 
 const client = redis.createClient({
     socket: {
-        host: 'redis-11688.c264.ap-south-1-1.ec2.redns.redis-cloud.com',
+        host: process.env.REDIS_HOST,
         port: 11688
     },
     username: 'default',
-    password: 'oMOqreA0knxPgPhonBQ2dbHaYWXy0g4F'
+    password: process.env.REDIS_PASS
 });
 
 client.on('error', err => console.error('Redis Client Error', err));

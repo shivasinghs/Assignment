@@ -1,25 +1,39 @@
 const { DataTypes } = require("sequelize")
 const sequelize = require("../../config/sequelize")
-const { uuidv4 } = require("../../config/constants")
-const MstCountry = require("./MstCountry")
 
-const MstCity = sequelize.define(
-  "MstCity",
-  {
+const ItemModule = sequelize.define("ItemModule", {
     id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
-      allowNull: false
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4, 
+    allowNull: false,
     },
-    countryId: {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    userId: {
       type: DataTypes.UUID,
-      field: "country_id",
-      references: {
-        model: MstCountry,
-        key: "id"
-      },
-      allowNull: false
+      allowNull: false,
+      field: "user_id",
+    },
+    itemTypeId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: "item_type_id",
+    },
+    categoryId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: "category_id",
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -30,7 +44,7 @@ const MstCity = sequelize.define(
       type: DataTypes.BIGINT,
       field: "created_at",
       allowNull: false,
-      defaultValue: () => Math.floor(Date.now() / 1000),
+      defaultValue: Math.floor(Date.now() / 1000)
     },
     createdBy: {
       type: DataTypes.UUID,
@@ -38,7 +52,7 @@ const MstCity = sequelize.define(
       allowNull: true
     },
     updatedAt: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       field: "updated_at",
       allowNull: true
     },
@@ -58,16 +72,14 @@ const MstCity = sequelize.define(
       allowNull: true
     },
     deletedAt: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.DATE,
       field: "deleted_at",
       allowNull: true
     }
-  },
-  {
-    tableName: "mst_city",
+  }, {
+    tableName: "item_module",
     freezeTableName: true,
-    timestamps: false
-  }
-)
+    timestamps: false,
+  });
 
-module.exports = MstCity
+  module.exports = ItemModule;
